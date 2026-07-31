@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Project vs Unit Volume Analysis</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      /* ---------------- CORE & THEME COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        /* image6.jpg with high transparency overlay using theme colors */
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.96)),
+          url("image6.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .luminous-particle {
+        position: absolute;
+        background: #8fe7e7;
+        border-radius: 50%;
+        box-shadow:
+          0 0 15px #8fe7e7,
+          0 0 30px #2c6e6e;
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 0.2;
+        }
+        50% {
+          opacity: 0.6;
+          box-shadow:
+            0 0 25px #8fe7e7,
+            0 0 50px #8fe7e7;
+        }
+        100% {
+          transform: translateY(-40px) scale(1.2);
+          opacity: 0.1;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      /* ---------------- MAIN CONTENT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* ---------------- CHART GLASS PANEL ---------------- */
+      .chart-glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 30px 40px 10px 40px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(14, 51, 51, 0.5);
+        margin-bottom: 40px;
+        animation: fadeInUp 1s ease-out;
+        position: relative;
+      }
+
+      .chart-glass-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        pointer-events: none;
+      }
+
+      .chart-wrapper {
+        height: 500px;
+        width: 100%;
+      }
+
+      /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+      }
+
+      .insight-card {
+        background: rgba(14, 51, 51, 0.5);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(44, 110, 110, 0.5);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .insight-card:nth-child(1) {
+        animation-delay: 0.3s;
+      }
+      .insight-card:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+      .insight-card:nth-child(3) {
+        animation-delay: 0.7s;
+      }
+
+      .insight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #8fe7e7;
+        box-shadow:
+          0 15px 40px rgba(44, 110, 110, 0.8),
+          inset 0 0 15px rgba(143, 231, 231, 0.2);
+      }
+
+      .insight-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c6e6e, #8fe7e7, #ffffff);
+        transition: width 0.5s ease;
+      }
+      .insight-card:hover::after {
+        width: 100%;
+      }
+
+      .insight-icon {
+        font-size: 2.2rem;
+        color: #8fe7e7;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 0 8px rgba(143, 231, 231, 0.6));
+      }
+
+      .insight-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .insight-text {
+        font-size: 0.95rem;
+        color: #d4eeee;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      .highlight {
+        color: #ffffff;
+        font-weight: 600;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .insights-grid {
+          grid-template-columns: 1fr;
+        }
+        .chart-wrapper {
+          height: 400px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+      <a href="page5.html" class="btn-nav"
+        ><i class="fa-solid fa-arrow-left"></i> Back</a
+      >
+      <a href="page7.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Market Scale & Delivery Dominance</h1>
+        <h2>Total Apartment Projects vs. Total Apartment Units Delivered</h2>
+      </div>
+
+      <!-- Luminous Bubble Chart Area -->
+      <div class="chart-glass-panel">
+        <div class="chart-wrapper">
+          <canvas id="volumeBubbleChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Management Executive Insights -->
+      <div class="insights-grid">
+        <div class="insight-card">
+          <i class="fa-solid fa-chart-line insight-icon"></i>
+          <div class="insight-title">The Mega-Scale Builders</div>
+          <div class="insight-text">
+            Companies located high on the Y-Axis execute massive multi-tower
+            structures. They achieve incredibly high unit volumes despite
+            executing a lower overall number of individual projects, maximizing
+            land efficiency. Ex:Jhon Keells Properties, Home Lands Skyline
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-layer-group insight-icon"></i>
+          <div class="insight-title">The Market Penetration Leaders</div>
+          <div class="insight-text">
+            Companies stretching far across the X-Axis command massive
+            geographical market share. Their strategy relies on building
+            numerous medium-to-high density projects across multiple prime
+            localities. Ex: Prime Group
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-bullseye insight-icon"></i>
+          <div class="insight-title">Strategic Recommendation</div>
+          <div class="insight-text">
+            For top-tier profitability,
+            <span class="highlight">Prime Group</span> should leverage its vast
+            market penetration (X-Axis) and pivot towards high-density, vertical
+            mega-projects (Y-Axis push) to maximize unit volume while reducing
+            individual site acquisition and logistical costs.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------------------------------------------------------------
+           1. RHYTHMIC PARTICLE GENERATOR
+        ------------------------------------------------------------------------- */
+      const particleContainer = document.getElementById("particle-container");
+      for (let i = 0; i < 35; i++) {
+        let particle = document.createElement("div");
+        particle.className = "luminous-particle";
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        let size = Math.random() * 6 + 3;
+        particle.style.width = size + "px";
+        particle.style.height = size + "px";
+        particle.style.animationDuration = Math.random() * 3 + 2 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      /* -------------------------------------------------------------------------
+           2. RAW EXCEL DATA ARRAY (EDITABLE)
+           To update this, just paste your rows in the same format below.
+           The code will automatically count the repetitions (projects)
+           and SUM the "No of Units".
+        ------------------------------------------------------------------------- */
+      const rawExcelData = [
+        // PRIME GROUP (Example: 6 projects, totaling 1110 units)
+        { "Company Name": "Prime Group", "No of Units": 480 },
+        { "Company Name": "Prime Group", "No of Units": 84 },
+        { "Company Name": "Prime Group", "No of Units": 33 },
+        { "Company Name": "Prime Group", "No of Units": 39 },
+        { "Company Name": "Prime Group", "No of Units": 40 },
+        { "Company Name": "Prime Group", "No of Units": 25 },
+        { "Company Name": "Prime Group", "No of Units": 60 },
+        { "Company Name": "Prime Group", "No of Units": 60 },
+        { "Company Name": "Prime Group", "No of Units": 18 },
+        { "Company Name": "Prime Group", "No of Units": 57 },
+        { "Company Name": "Prime Group", "No of Units": 40 },
+        { "Company Name": "Prime Group", "No of Units": 14 },
+        { "Company Name": "Prime Group", "No of Units": 14 },
+        { "Company Name": "Prime Group", "No of Units": 20 },
+        { "Company Name": "Prime Group", "No of Units": 26 },
+        { "Company Name": "Prime Group", "No of Units": 24 },
+        { "Company Name": "Prime Group", "No of Units": 52 },
+        { "Company Name": "Prime Group", "No of Units": 60 },
+        { "Company Name": "Prime Group", "No of Units": 60 },
+        { "Company Name": "Prime Group", "No of Units": 28 },
+        { "Company Name": "Prime Group", "No of Units": 38 },
+        { "Company Name": "Prime Group", "No of Units": 14 },
+        { "Company Name": "Prime Group", "No of Units": 40 },
+        { "Company Name": "Prime Group", "No of Units": 35 },
+        { "Company Name": "Prime Group", "No of Units": 25 },
+        { "Company Name": "Prime Group", "No of Units": 68 },
+        { "Company Name": "Prime Group", "No of Units": 75 },
+        { "Company Name": "Prime Group", "No of Units": 15 },
+        { "Company Name": "Prime Group", "No of Units": 54 },
+        { "Company Name": "Prime Group", "No of Units": 60 },
+        { "Company Name": "Prime Group", "No of Units": 37 },
+        { "Company Name": "Prime Group", "No of Units": 40 },
+        { "Company Name": "Prime Group", "No of Units": 333 },
+        { "Company Name": "Prime Group", "No of Units": 32 },
+        { "Company Name": "Prime Group", "No of Units": 69 },
+        { "Company Name": "Prime Group", "No of Units": 116 },
+        { "Company Name": "Prime Group", "No of Units": 73 },
+        { "Company Name": "Prime Group", "No of Units": 328 },
+        { "Company Name": "Prime Group", "No of Units": 180 },
+        { "Company Name": "Prime Group", "No of Units": 44 },
+        { "Company Name": "Prime Group", "No of Units": 476 },
+        { "Company Name": "Prime Group", "No of Units": 336 },
+        { "Company Name": "Prime Group", "No of Units": 64 },
+        { "Company Name": "Prime Group", "No of Units": 333 },
+        { "Company Name": "Prime Group", "No of Units": 152 },
+        { "Company Name": "Prime Group", "No of Units": 118 },
+        { "Company Name": "Prime Group", "No of Units": 520 },
+        { "Company Name": "Prime Group", "No of Units": 228 },
+        { "Company Name": "Prime Group", "No of Units": 351 },
+
+        // BLUE OCEAN GROUP
+        { "Company Name": "Blue Ocean Group", "No of Units": 40 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 63 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 18 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 62 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 20 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 15 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 66 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 54 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 57 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 55 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 12 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 20 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 70 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 49 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 78 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 13 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 10 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 21 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 25 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 28 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 12 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 32 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 21 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 40 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 19 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 13 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 19 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 32 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 31 },
+        { "Company Name": "Blue Ocean Group", "No of Units": 120 },
+
+        // JOHN KEELLS PROPERTIES (Few projects, massive units)
+        { "Company Name": "John Keells Properties", "No of Units": 753 },
+        { "Company Name": "John Keells Properties", "No of Units": 897 },
+        { "Company Name": "John Keells Properties", "No of Units": 418 },
+        { "Company Name": "John Keells Properties", "No of Units": 427 },
+        { "Company Name": "John Keells Properties", "No of Units": 197 },
+        { "Company Name": "John Keells Properties", "No of Units": 167 },
+        { "Company Name": "John Keells Properties", "No of Units": 475 },
+
+        // HOME LANDS SKYLINE
+        { "Company Name": "Home Lands Skyline", "No of Units": 300 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 224 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 96 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 280 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 362 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 288 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 202 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 335 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 392 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 392 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 288 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 1200 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 192 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 336 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 354 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 77 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 45 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 63 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 132 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 354 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 83 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 54 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 18 },
+        { "Company Name": "Home Lands Skyline", "No of Units": 37 },
+
+        // RUSH LANKA GROUP
+        { "Company Name": "Rush Lanka Group", "No of Units": 20 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 35 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 35 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 32 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 52 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 24 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 72 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 32 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 26 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 26 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 1 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 2 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 18 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 2 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 64 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 25 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 45 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 38 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 54 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 125 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 12 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 21 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 36 },
+        { "Company Name": "Rush Lanka Group", "No of Units": 350 },
+
+        // FAIRWAY PROPERTIES
+        { "Company Name": "Fairway Properties", "No of Units": 176 },
+        { "Company Name": "Fairway Properties", "No of Units": 250 },
+        { "Company Name": "Fairway Properties", "No of Units": 130 },
+        { "Company Name": "Fairway Properties", "No of Units": 110 },
+        { "Company Name": "Fairway Properties", "No of Units": 65 },
+        { "Company Name": "Fairway Properties", "No of Units": 120 },
+
+        // CORAL PROPERTY DEVELOPERS
+        { "Company Name": "Coral Property Developers", "No of Units": 15 },
+        { "Company Name": "Coral Property Developers", "No of Units": 24 },
+        { "Company Name": "Coral Property Developers", "No of Units": 18 },
+        { "Company Name": "Coral Property Developers", "No of Units": 54 },
+        { "Company Name": "Coral Property Developers", "No of Units": 77 },
+        { "Company Name": "Coral Property Developers", "No of Units": 55 },
+
+        // JAT LIVING
+        { "Company Name": "JAT Living", "No of Units": 104 },
+        { "Company Name": "JAT Living", "No of Units": 48 },
+        { "Company Name": "JAT Living", "No of Units": 24 },
+
+        // SPAN TOWER
+        { "Company Name": "Span Tower", "No of Units": 15 },
+        { "Company Name": "Span Tower", "No of Units": 31 },
+        { "Company Name": "Span Tower", "No of Units": 48 },
+        { "Company Name": "Span Tower", "No of Units": 21 },
+        { "Company Name": "Span Tower", "No of Units": 10 },
+        { "Company Name": "Span Tower", "No of Units": 16 },
+        { "Company Name": "Span Tower", "No of Units": 48 },
+        { "Company Name": "Span Tower", "No of Units": 52 },
+        { "Company Name": "Span Tower", "No of Units": 32 },
+        { "Company Name": "Span Tower", "No of Units": 32 },
+        { "Company Name": "Span Tower", "No of Units": 26 },
+        { "Company Name": "Span Tower", "No of Units": 61 },
+        { "Company Name": "Span Tower", "No of Units": 28 },
+        { "Company Name": "Span Tower", "No of Units": 66 },
+        { "Company Name": "Span Tower", "No of Units": 50 },
+        { "Company Name": "Span Tower", "No of Units": 21 },
+        { "Company Name": "Span Tower", "No of Units": 28 },
+        { "Company Name": "Span Tower", "No of Units": 32 },
+        { "Company Name": "Span Tower", "No of Units": 88 },
+        { "Company Name": "Span Tower", "No of Units": 49 },
+        { "Company Name": "Span Tower", "No of Units": 30 },
+        { "Company Name": "Span Tower", "No of Units": 40 },
+        { "Company Name": "Span Tower", "No of Units": 22 },
+
+        // TRILLIUM
+        { "Company Name": "Trillium", "No of Units": 16 },
+        { "Company Name": "Trillium", "No of Units": 60 },
+        { "Company Name": "Trillium", "No of Units": 300 },
+        { "Company Name": "Trillium", "No of Units": 40 },
+
+        // GLOBAL HOUSING & REAL ESTATE
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 24 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 32 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 4 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 15 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 37 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 36 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 209 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 47 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 15 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 20 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 11 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 8 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 108 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 258 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 48 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 48 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 35 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 42 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 27 },
+        { "Company Name": "Global Housing & Real Estate", "No of Units": 298 },
+      ];
+
+      /* -------------------------------------------------------------------------
+           3. DATA AGGREGATION & CALCULATION LOGIC
+        ------------------------------------------------------------------------- */
+      const aggregatedData = {};
+
+      // Loop through the raw data and calculate totals
+      rawExcelData.forEach((row) => {
+        let company = row["Company Name"];
+        let units = Number(row["No of Units"]) || 0; // Convert to number, default to 0 if empty
+
+        // If company doesn't exist in our aggregated object yet, add it
+        if (!aggregatedData[company]) {
+          aggregatedData[company] = { totalProjects: 0, totalUnits: 0 };
+        }
+
+        // Calculations: Add 1 to project count, add units to total units
+        aggregatedData[company].totalProjects += 1;
+        aggregatedData[company].totalUnits += units;
+      });
+
+      // Predefined color palette for the companies
+      const colorPalette = [
+        "rgba(143, 231, 231, 0.7)",
+        "rgba(44, 110, 110, 0.7)",
+        "rgba(0, 255, 120, 0.7)",
+        "rgba(255, 0, 255, 0.7)",
+        "rgba(0, 140, 255, 0.7)",
+        "rgba(255, 50, 50, 0.7)",
+        "rgba(50, 255, 50, 0.7)",
+        "rgba(255, 120, 0, 0.7)",
+        "rgba(255, 0, 90, 0.7)",
+        "rgba(50, 50, 255, 0.7)",
+        "rgba(180, 0, 255, 0.7)",
+        "rgba(255, 180, 0, 0.7)",
+        "rgba(0, 255, 180, 0.7)",
+      ];
+
+      // Format data for Chart.js
+      const chartDatasets = Object.keys(aggregatedData).map(
+        (company, index) => {
+          const stats = aggregatedData[company];
+          return {
+            label: company,
+            data: [
+              {
+                x: stats.totalProjects, // X-Axis
+                y: stats.totalUnits, // Y-Axis
+                r: Math.max(Math.sqrt(stats.totalUnits) * 0.8, 5), // Bubble size scaling
+              },
+            ],
+            backgroundColor: colorPalette[index % colorPalette.length],
+            borderColor: colorPalette[index % colorPalette.length].replace(
+              "0.7)",
+              "1)",
+            ),
+            borderWidth: 2,
+            hoverBorderWidth: 4,
+            hoverBorderColor: "#ffffff",
+          };
+        },
+      );
+
+      /* -------------------------------------------------------------------------
+           4. LUMINOUS GLOWING BUBBLE PLUGIN
+        ------------------------------------------------------------------------- */
+      const glowingBubblePlugin = {
+        id: "glowingBubblePlugin",
+        beforeDatasetsDraw(chart) {
+          const { ctx } = chart;
+          chart.data.datasets.forEach((dataset, index) => {
+            const meta = chart.getDatasetMeta(index);
+            meta.data.forEach((element) => {
+              ctx.save();
+              ctx.shadowColor = dataset.borderColor;
+              ctx.shadowBlur = 25;
+              ctx.beginPath();
+              ctx.arc(
+                element.x,
+                element.y,
+                element.options.radius,
+                0,
+                Math.PI * 2,
+              );
+              ctx.fillStyle = dataset.backgroundColor;
+              ctx.fill();
+              ctx.restore();
+            });
+          });
+        },
+      };
+      Chart.register(glowingBubblePlugin);
+
+      /* -------------------------------------------------------------------------
+           5. RENDER THE CHART
+        ------------------------------------------------------------------------- */
+      const ctx = document.getElementById("volumeBubbleChart").getContext("2d");
+      Chart.defaults.color = "#e0e0e0";
+      Chart.defaults.font.family = "Poppins";
+
+      new Chart(ctx, {
+        type: "bubble",
+        data: { datasets: chartDatasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            // LEGEND POSITIONED AT THE BOTTOM
+            legend: {
+              position: "bottom",
+              labels: {
+                color: "#ffffff",
+                font: { size: 12, family: "Poppins" },
+                usePointStyle: true,
+                padding: 20,
+              },
+            },
+            // CUSTOM GLOWING GLASS TOOLTIP WITH COMPANY NAME
+            tooltip: {
+              backgroundColor: "rgba(14, 51, 51, 0.85)",
+              titleColor: "#8fe7e7",
+              bodyColor: "#ffffff",
+              borderColor: "#2c6e6e",
+              borderWidth: 1,
+              padding: 15,
+              displayColors: false,
+              titleFont: { size: 18, weight: "bold", family: "Poppins" },
+              bodyFont: { size: 14, family: "Poppins" },
+              callbacks: {
+                // Display the Company Name explicitly as the title
+                title: function (context) {
+                  return context[0].dataset.label;
+                },
+                // Format the Data inside the body
+                label: function (context) {
+                  const raw = context.raw;
+                  return [
+                    `Total Projects  : ${raw.x}`,
+                    `Total Units Delivered : ${raw.y.toLocaleString()}`,
+                  ];
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Total Number of Projects Executed (Count of Projects)",
+                color: "#8fe7e7",
+                font: { size: 14, weight: "bold", letterSpacing: 1 },
+              },
+              grid: { color: "rgba(143, 231, 231, 0.08)" },
+              ticks: { color: "#ffffff", font: { size: 13 } },
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Total Apartment Units Delivered (Sum of Units)",
+                color: "#8fe7e7",
+                font: { size: 14, weight: "bold", letterSpacing: 1 },
+              },
+              grid: { color: "rgba(143, 231, 231, 0.08)" },
+              ticks: { color: "#ffffff", font: { size: 13 } },
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

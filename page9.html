@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Group - Historical Price Appreciation</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ---------------- CORE & THEME COLORS ---------------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+        
+        body { 
+            /* image9.jpg with theme-matched transparency overlay */
+            background: linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.96)), url('image9.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0e3333; }
+        ::-webkit-scrollbar-thumb { background: #2c6e6e; border-radius: 4px; }
+
+        /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+        #particle-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .glow-particle {
+            position: absolute;
+            background: #8fe7e7;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #8fe7e7, 0 0 30px #2c6e6e;
+            animation: rhythmicFloat infinite ease-in-out alternate;
+        }
+
+        @keyframes rhythmicFloat {
+            0% { transform: translateY(0) scale(0.8); opacity: 0.1; }
+            50% { opacity: 0.6; box-shadow: 0 0 20px #8fe7e7, 0 0 40px #8fe7e7; }
+            100% { transform: translateY(-30px) scale(1.1); opacity: 0.05; }
+        }
+
+        /* ---------------- NAVIGATION ---------------- */
+        .nav-container {
+            position: relative; z-index: 100;
+            padding: 30px 4% 10px;
+            display: flex; justify-content: space-between;
+        }
+        .btn-nav {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 35px; font-size: 0.95rem; font-weight: 600; 
+            color: #ffffff; background-color: #2c6e6e; border: 2px solid #2d6b6b;
+            border-radius: 50px; text-decoration: none; transition: all 0.3s ease; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-nav:hover { 
+            background-color: #0e3333; border-color: #8fe7e7; 
+            transform: translateY(-4px); box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3); 
+        }
+
+        /* ---------------- MAIN CONTENT ---------------- */
+        .main-content {
+            position: relative; z-index: 10;
+            padding: 10px 4% 50px; max-width: 1600px; margin: 0 auto;
+        }
+
+        .header-box { text-align: center; margin-bottom: 40px; animation: fadeInDown 1s ease-out; }
+        .header-box h1 { font-size: 2.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .header-box h2 { font-size: 1.1rem; color: #8fe7e7; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* ---------------- CHART GLASS PANEL ---------------- */
+        .chart-glass-panel {
+            background: rgba(26, 80, 80, 0.35); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(143, 231, 231, 0.2); 
+            border-radius: 24px;
+            padding: 30px 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(14, 51, 51, 0.5);
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+        }
+        
+        .chart-glass-panel::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); pointer-events: none;
+        }
+
+        .chart-wrapper {
+            height: 550px; 
+            width: 100%;
+        }
+        
+        /* Loading Status */
+        #data-status {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #8fe7e7; font-size: 1.2rem; font-weight: 500; animation: pulse 1.5s infinite; text-align: center; width: 80%;
+        }
+
+        /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .insight-card {
+            background: rgba(14, 51, 51, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(44, 110, 110, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .insight-card:nth-child(1) { animation-delay: 0.3s; }
+        .insight-card:nth-child(2) { animation-delay: 0.5s; }
+        .insight-card:nth-child(3) { animation-delay: 0.7s; }
+
+        .insight-card:hover {
+            transform: translateY(-8px);
+            background: rgba(26, 80, 80, 0.7);
+            border-color: #8fe7e7;
+            box-shadow: 0 15px 40px rgba(44, 110, 110, 0.8), inset 0 0 15px rgba(143, 231, 231, 0.2);
+        }
+
+        .insight-card::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 0; height: 4px;
+            background: linear-gradient(90deg, #2c6e6e, #8fe7e7, #ffffff);
+            transition: width 0.5s ease;
+        }
+        .insight-card:hover::after { width: 100%; }
+
+        .insight-icon {
+            font-size: 2.2rem; color: #8fe7e7; margin-bottom: 15px;
+            filter: drop-shadow(0 0 8px rgba(143, 231, 231, 0.6));
+        }
+
+        .insight-title {
+            font-size: 1.2rem; font-weight: 700; color: #ffffff;
+            margin-bottom: 12px; letter-spacing: 0.5px;
+        }
+
+        .insight-text {
+            font-size: 0.95rem; color: #d4eeee; line-height: 1.7; font-weight: 300;
+        }
+
+        .highlight { color: #ffffff; font-weight: 600; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        /* Responsive */
+        @media (max-width: 1024px) { .insights-grid { grid-template-columns: 1fr; } .chart-wrapper { height: 500px; } }
+    </style>
+</head>
+<body>
+
+    <!-- Glowing Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+        <a href="page8.html" class="btn-nav"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <a href="page10.html" class="btn-nav">Next <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="header-box">
+            <h1>Historical Price Appreciation</h1>
+            <h2>Average Sale Price (LKR) per Sq.Ft. Growth Over Time</h2>
+        </div>
+
+        <!-- Chart Area -->
+        <div class="chart-glass-panel">
+            <div id="data-status">Fetching Live Pricing Data...</div>
+            <div class="chart-wrapper">
+                <canvas id="priceClusteredChart" style="display: none;"></canvas>
+            </div>
+        </div>
+
+        <!-- Executive Insights -->
+        <div class="insights-grid">
+            <div class="insight-card">
+                <i class="fa-solid fa-arrow-trend-up insight-icon"></i>
+                <div class="insight-title">Capital Appreciation Zones</div>
+                <div class="insight-text">
+                    Observe the "staircase effect" in the clustered bars. Localities displaying steep, consistent steps upward across the years signify <span class="highlight">rapid land value appreciation</span>, indicating prime targets for upcoming high-yield luxury developments.
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <i class="fa-solid fa-scale-balanced insight-icon"></i>
+                <div class="insight-title">Price Stabilization Markers</div>
+                <div class="insight-text">
+                    Bars that remain relatively flat over multiple years highlight <span class="highlight">market saturation</span> or price ceilings. These are optimal locations for mid-tier or economical projects rather than ultra-luxury investments.
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <i class="fa-solid fa-hand-holding-dollar insight-icon"></i>
+                <div class="insight-title">Strategic ROI Recommendation</div>
+                <div class="insight-text">
+                    Top Management should align future land bank acquisitions with the localities showing the highest <span class="highlight">Year-over-Year (YoY) percentage growth</span> in sq.ft pricing, maximizing developer margins prior to competitor entry.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------------------
+           1. PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+        const particleContainer = document.getElementById('particle-container');
+        for(let i = 0; i < 40; i++) {
+            let particle = document.createElement('div');
+            particle.className = 'glow-particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            let size = Math.random() * 5 + 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            particle.style.animationDelay = (Math.random() * 5) + 's';
+            particleContainer.appendChild(particle);
+        }
+
+        /* -------------------------------------------------------------------------
+           2. FALLBACK DATA 
+        ------------------------------------------------------------------------- */
+        const fallbackData = [
+            ["Location", "Year", "Average Sale Price(LKR) per sq.ft."],
+            ["Colombo 7", "2021", "55000"],
+            ["Colombo 7", "2022", "62000"],
+            ["Colombo 7", "2023", "75000"],
+            ["Rajagiriya", "2021", "40000"],
+            ["Rajagiriya", "2022", "48000"],
+            ["Rajagiriya", "2023", "55000"],
+            ["Malabe", "2021", "25000"],
+            ["Malabe", "2022", "29000"],
+            ["Malabe", "2023", "34000"]
+        ];
+
+        /* -------------------------------------------------------------------------
+           3. LIVE FETCH LOGIC (Using the Web Published CSV Link)
+        ------------------------------------------------------------------------- */
+        const publishedCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQiYBfEmr-GuZ-v68MqKsbQRtSuJkTlq13zezqgp6SpRnYxU02MJYfy0cXsGVchmuKB4jO2fAKu_55J/pub?output=csv";
+
+        Papa.parse(publishedCsvUrl, {
+            download: true,
+            header: false, // Map by index: Col 0 = Location, Col 1 = Year, Col 2 = Price
+            skipEmptyLines: true,
+            complete: function(results) {
+                document.getElementById('data-status').style.display = 'none';
+                document.getElementById('priceClusteredChart').style.display = 'block';
+                processAndRenderData(results.data);
+            },
+            error: function(err) {
+                console.warn("Live Fetch Error. Loading fallback data.");
+                const statusDiv = document.getElementById('data-status');
+                statusDiv.innerText = "Error connecting to live data. Displaying Backup Analysis.";
+                statusDiv.style.color = "#ffb400";
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    document.getElementById('priceClusteredChart').style.display = 'block';
+                    processAndRenderData(fallbackData);
+                }, 1500);
+            }
+        });
+
+        /* -------------------------------------------------------------------------
+           4. DATA PROCESSING & CHART RENDER
+        ------------------------------------------------------------------------- */
+        function processAndRenderData(rawData) {
+            
+            // Structure: { Location1: { "2021": 45000, "2022": 50000 }, Location2: {...} }
+            const priceMap = {};
+            const uniqueYears = new Set();
+            const uniqueLocations = new Set();
+
+            // Start loop from 1 to skip the header row
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                let location = row[0] ? row[0].trim() : null;
+                let year = row[1] ? row[1].trim() : null;
+                
+                // Remove commas and currency symbols, convert to float
+                let rawPriceString = row[2] ? row[2].replace(/,/g, '').replace(/Rs/gi, '').trim() : "0";
+                let price = parseFloat(rawPriceString) || 0;
+                
+                if (location && year && price > 0) {
+                    uniqueLocations.add(location);
+                    uniqueYears.add(year);
+
+                    if (!priceMap[location]) {
+                        priceMap[location] = {};
+                    }
+                    // If multiple entries for the same year/location exist, we could average them.
+                    // For now, assuming the sheet has one aggregated value per year/location.
+                    priceMap[location][year] = price;
+                }
+            }
+
+            // Convert Sets to Arrays and sort them logically
+            const locationsArray = Array.from(uniqueLocations).sort();
+            const yearsArray = Array.from(uniqueYears).sort(); // E.g., [2021, 2022, 2023]
+
+            // Step 3: Prepare Datasets for Chart.js (One dataset per YEAR)
+            // Color palette mapped chronologically (Teal -> Emerald -> Gold -> Rose)
+            const colorPalette = [
+                "rgba(143, 231, 231, 0.85)", // Teal
+                "rgba(0, 255, 120, 0.85)",   // Emerald
+                "rgba(255, 180, 0, 0.85)",   // Gold
+                "rgba(255, 0, 150, 0.85)",   // Rose/Pink
+                "rgba(0, 140, 255, 0.85)"    // Blue
+            ];
+
+            const datasets = yearsArray.map((year, index) => {
+                return {
+                    label: year, // Legend label is the Year
+                    // For each location, get the price for this specific year (or null if no data)
+                    data: locationsArray.map(loc => priceMap[loc][year] || null),
+                    backgroundColor: colorPalette[index % colorPalette.length],
+                    borderColor: colorPalette[index % colorPalette.length].replace('0.85)', '1)'),
+                    borderWidth: 1,
+                    borderRadius: 6, // Smooth rounded tops
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: '#ffffff'
+                };
+            });
+
+            /* ---------------------------------------------------------------------
+               CUSTOM PLUGIN: NEON GLOWING BARS
+            --------------------------------------------------------------------- */
+            const glowingBarPlugin = {
+                id: 'glowingBar',
+                beforeDatasetDraw(chart, args, options) {
+                    const { ctx } = chart;
+                    const dataset = chart.data.datasets[args.index];
+                    if (!dataset) return;
+                    ctx.save();
+                    ctx.shadowColor = dataset.borderColor || dataset.backgroundColor;
+                    ctx.shadowBlur = 10; 
+                },
+                afterDatasetDraw(chart, args, options) {
+                    chart.ctx.restore();
+                }
+            };
+            Chart.register(glowingBarPlugin);
+
+            /* ---------------------------------------------------------------------
+               RENDER CHART.JS (CLUSTERED BAR CHART)
+            --------------------------------------------------------------------- */
+            const ctx = document.getElementById('priceClusteredChart').getContext('2d');
+            Chart.defaults.color = '#e0e0e0';
+            Chart.defaults.font.family = 'Poppins';
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: locationsArray, // X-Axis (Locations)
+                    datasets: datasets      // Clusters (Years)
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    // By NOT setting 'stacked: true', Chart.js defaults to clustered grouping!
+                    interaction: {
+                        mode: 'index', // Hovering over a location shows all years for that location
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#ffffff', font: { size: 13, family: 'Poppins', weight: '500' }, padding: 15, usePointStyle: true }
+                        },
+                        // CUSTOM GLOWING MULTI-DATA TOOLTIP
+                        tooltip: {
+                            backgroundColor: 'rgba(14, 51, 51, 0.95)',
+                            titleColor: '#8fe7e7',
+                            bodyColor: '#ffffff',
+                            borderColor: '#2c6e6e',
+                            borderWidth: 1,
+                            padding: 15,
+                            titleFont: { size: 16, weight: 'bold', family: 'Poppins' },
+                            bodyFont: { size: 14, family: 'Poppins' },
+                            callbacks: {
+                                // Title: Shows the Location
+                                title: function(context) {
+                                    return "Locality: " + context[0].label; 
+                                },
+                                // Body: Formats price to LKR currency
+                                label: function(context) {
+                                    let val = context.raw;
+                                    if (val !== null) {
+                                        return context.dataset.label + " : LKR " + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " / sq.ft";
+                                    }
+                                    return context.dataset.label + " : No Data";
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#ffffff', font: { size: 12, weight: '500' }, maxRotation: 45, minRotation: 45 },
+                            grid: { display: false },
+                            title: { display: true, text: 'Geographical Locations', color: '#8fe7e7', font: { size: 15, weight: 'bold', letterSpacing: 1 } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Avg Sale Price (LKR) per Sq.Ft', color: '#8fe7e7', font: { size: 15, weight: 'bold', letterSpacing: 1 } },
+                            ticks: { 
+                                color: '#ffffff',
+                                // Format the Y-axis labels to look like currency (e.g., 50k, 100k)
+                                callback: function(value) {
+                                    if(value >= 1000) {
+                                        return 'LKR ' + (value/1000) + 'k';
+                                    }
+                                    return 'LKR ' + value;
+                                }
+                            },
+                            grid: { color: 'rgba(143, 231, 231, 0.08)' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Primary Survey Data Analysis</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.96)),
+          url("image18.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .survey-particle {
+        position: absolute;
+        color: rgba(143, 231, 231, 0.4);
+        filter: drop-shadow(0 0 10px rgba(143, 231, 231, 0.6));
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8) rotate(-15deg);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.5;
+          filter: drop-shadow(0 0 15px #8fe7e7) drop-shadow(0 0 20px #2c6e6e);
+        }
+        100% {
+          transform: translateY(-40px) scale(1.2) rotate(15deg);
+          opacity: 0.05;
+        }
+      }
+
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1700px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 30px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      #data-status {
+        text-align: center;
+        color: #8fe7e7;
+        font-size: 1.2rem;
+        font-weight: 500;
+        animation: pulse 1.5s infinite;
+        margin-bottom: 30px;
+      }
+
+      .analysis-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Equal width for chart and quotes */
+        gap: 40px;
+        margin-bottom: 50px;
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+      }
+
+      .analysis-section:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .analysis-section:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      .analysis-section:nth-child(4) {
+        animation-delay: 0.6s;
+      }
+
+      .full-width-section {
+        grid-template-columns: 1fr;
+      }
+
+      .glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.4),
+          inset 0 0 20px rgba(14, 51, 51, 0.5);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.4s ease;
+        height: 550px; /* Fixed height for consistent look */
+      }
+
+      .glass-panel:hover {
+        border-color: #8fe7e7;
+        box-shadow:
+          0 15px 40px rgba(44, 110, 110, 0.6),
+          inset 0 0 15px rgba(143, 231, 231, 0.15);
+        transform: translateY(-5px);
+      }
+
+      .panel-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 15px;
+        letter-spacing: 0.5px;
+        text-align: center;
+        border-bottom: 1px solid rgba(143, 231, 231, 0.2);
+        padding-bottom: 10px;
+      }
+
+      .chart-wrapper {
+        flex-grow: 1; /* Takes up remaining space in panel */
+        width: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .insight-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: flex-start;
+      }
+
+      .insight-icon {
+        font-size: 2.2rem;
+        color: #8fe7e7;
+        text-align: center;
+        margin-bottom: 10px;
+        filter: drop-shadow(0 0 10px rgba(143, 231, 231, 0.6));
+      }
+
+      .quotes-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        overflow-y: auto;
+        flex-grow: 1;
+        padding-right: 15px;
+        /* Custom inner scrollbar for quotes */
+        scrollbar-width: thin;
+        scrollbar-color: #8fe7e7 transparent;
+      }
+
+      .quotes-container::-webkit-scrollbar {
+        width: 6px;
+      }
+      .quotes-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+      .quotes-container::-webkit-scrollbar-thumb {
+        background: #4dc2c2;
+        border-radius: 10px;
+      }
+
+      .quote-box {
+        background: rgba(14, 51, 51, 0.8);
+        border-left: 4px solid;
+        padding: 15px 20px;
+        border-radius: 0 12px 12px 0;
+        font-style: italic;
+        color: #e0e0e0;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .quote-box:hover {
+        background: rgba(44, 110, 110, 0.8);
+        transform: translateX(5px);
+        color: #ffffff;
+      }
+
+      .quote-box::before {
+        content: "\f10d"; /* Quote Left Icon */
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 10px;
+        left: -15px;
+        color: inherit;
+        font-size: 1.5rem;
+        opacity: 0.3;
+      }
+
+      .respondent-tag {
+        display: block;
+        margin-top: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-style: normal;
+      }
+
+      #word-cloud-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 18px;
+        padding: 20px;
+        height: 100%;
+        overflow-y: auto;
+      }
+
+      .cloud-word {
+        display: inline-block;
+        font-weight: 700;
+        transition: all 0.4s ease;
+        text-transform: capitalize;
+        cursor: default;
+      }
+      .cloud-word:hover {
+        transform: scale(1.15) translateY(-5px);
+        text-shadow: 0 0 20px currentColor;
+        z-index: 10;
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .analysis-section {
+          grid-template-columns: 1fr;
+        }
+        .glass-panel {
+          height: auto;
+          min-height: 450px;
+        }
+        .quotes-container {
+          max-height: 400px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Survey Animated Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+      <a href="page16.html" class="btn-nav"
+        ><i class="fa-solid fa-arrow-left"></i> Back</a
+      >
+      <a href="page18.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Primary Market Research Insights</h1>
+        <h2>
+          Consumer Preferences & Behavioral Analytics from Live Survey Data
+        </h2>
+      </div>
+
+      <div id="data-status">
+        Fetching Live Survey Responses...
+        <i class="fa-solid fa-spinner fa-spin"></i>
+      </div>
+
+      <!-- Hidden until data is parsed -->
+      <div id="dashboard-content" style="display: none">
+        <!-- SECTION 1: Future Living Preference -->
+        <div class="analysis-section">
+          <div class="glass-panel">
+            <div class="panel-title">Future Living Preference</div>
+            <div class="chart-wrapper">
+              <canvas id="chart-location"></canvas>
+            </div>
+          </div>
+          <div class="glass-panel">
+            <div class="insight-content">
+              <i class="fa-solid fa-map-location-dot insight-icon"></i>
+              <div class="panel-title" style="border: none">
+                Top 25 Location Drivers
+              </div>
+              <div id="quotes-location" class="quotes-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: Real Estate Investment Preference -->
+        <div class="analysis-section">
+          <div class="glass-panel">
+            <div class="panel-title">Investment Real Estate Preference</div>
+            <div class="chart-wrapper">
+              <canvas id="chart-investment"></canvas>
+            </div>
+          </div>
+          <div class="glass-panel">
+            <div class="insight-content">
+              <i class="fa-solid fa-money-bill-trend-up insight-icon"></i>
+              <div class="panel-title" style="border: none">
+                Top 25 Asset Choice Rationales
+              </div>
+              <div id="quotes-investment" class="quotes-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: Preferred Real Estate Company -->
+        <div class="analysis-section">
+          <div class="glass-panel">
+            <div class="panel-title">Developer Brand Preference</div>
+            <div class="chart-wrapper">
+              <canvas id="chart-company"></canvas>
+            </div>
+          </div>
+          <div class="glass-panel">
+            <div class="insight-content">
+              <i class="fa-solid fa-building-user insight-icon"></i>
+              <div class="panel-title" style="border: none">
+                Top 25 Drivers of Brand Loyalty
+              </div>
+              <div id="quotes-company" class="quotes-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: Word Cloud (Top 3 Factors) -->
+        <div class="analysis-section full-width-section">
+          <div class="glass-panel" style="height: auto; min-height: 500px">
+            <div class="panel-title" style="font-size: 1.6rem">
+              <i
+                class="fa-solid fa-brain"
+                style="color: #8fe7e7; margin-right: 10px"
+              ></i>
+              Consumer Priorities: Top Considerations for Choosing a Real Estate
+              Company
+            </div>
+            <div id="word-cloud-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const particleContainer = document.getElementById("particle-container");
+      const surveyIcons = [
+        "fa-clipboard-list",
+        "fa-chart-pie",
+        "fa-square-poll-vertical",
+        "fa-file-signature",
+        "fa-magnifying-glass-chart",
+        "fa-users",
+        "fa-comment-dots",
+      ];
+
+      for (let i = 0; i < 35; i++) {
+        let particle = document.createElement("i");
+        const randomIcon =
+          surveyIcons[Math.floor(Math.random() * surveyIcons.length)];
+        particle.className = `fa-solid ${randomIcon} survey-particle`;
+
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        particle.style.fontSize = Math.random() * 15 + 15 + "px";
+
+        particle.style.animationDuration = Math.random() * 4 + 4 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      const pastelPaletteList = [
+        "#ffb3ba", // Pastel Pink
+        "#ffdfba", // Pastel Orange
+        "#ffffba", // Pastel Yellow
+        "#baffc9", // Pastel Green
+        "#bae1ff", // Pastel Blue
+        "#e8baff", // Pastel Purple
+        "#ffc4e1", // Light Magenta
+        "#c2f0fc", // Light Cyan
+        "#e2cbff", // Lavender
+        "#ffdab9", // Peach
+      ];
+
+      const publishedCsvUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhtaY53-F_zkMeOYKNQI1fa-96CF63BR_49LPPSlI3yK9ZAlFpL3frOmGsMAo0A/pub?output=csv";
+
+      Papa.parse(publishedCsvUrl, {
+        download: true,
+        header: false, // Extracting precisely by index
+        skipEmptyLines: true,
+        complete: function (results) {
+          document.getElementById("data-status").style.display = "none";
+          document.getElementById("dashboard-content").style.display = "block";
+          processData(results.data);
+        },
+        error: function (err) {
+          document.getElementById("data-status").innerHTML =
+            "Error connecting to live survey data. <br> Please ensure the sheet is published.";
+          document.getElementById("data-status").style.color = "#ff6b6b";
+        },
+      });
+
+      const stopWords = new Set([
+        "the",
+        "and",
+        "to",
+        "of",
+        "a",
+        "in",
+        "is",
+        "that",
+        "it",
+        "for",
+        "with",
+        "as",
+        "are",
+        "on",
+        "be",
+        "this",
+        "or",
+        "by",
+        "from",
+        "an",
+        "at",
+        "not",
+        "have",
+        "they",
+        "we",
+        "can",
+        "their",
+        "because",
+        "due",
+        "my",
+        "i",
+        "would",
+        "very",
+        "good",
+        "better",
+        "best",
+        "more",
+        "most",
+        "like",
+        "also",
+        "has",
+        "its",
+        "all",
+        "which",
+        "so",
+        "but",
+        "when",
+        "why",
+        "how",
+        "if",
+      ]);
+
+      function tallyCategories(dataArray) {
+        const counts = {};
+        dataArray.forEach((item) => {
+          if (!item || item.trim() === "") return;
+          const key = item.trim();
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        const sortedCounts = {};
+        Object.keys(counts)
+          .sort((a, b) => counts[b] - counts[a])
+          .forEach((k) => {
+            sortedCounts[k] = counts[k];
+          });
+        return sortedCounts;
+      }
+
+      /* Helper function to extract 25 quotes tied to their parent category */
+      function extractTopQuotes(dataPairsArray, count = 25) {
+        // Filter out empty or meaningless responses
+        const validPairs = dataPairsArray.filter((pair) => {
+          if (!pair.quote) return false;
+          const lower = pair.quote.toLowerCase().trim();
+          return (
+            lower.length > 15 &&
+            lower !== "none" &&
+            lower !== "n/a" &&
+            lower !== "no" &&
+            lower !== "nothing"
+          );
+        });
+
+        // Randomize selection so it's a mix of all responses
+        return validPairs.sort(() => 0.5 - Math.random()).slice(0, count);
+      }
+
+      /* Generates the HTML for the scrollable quote panels */
+      function generateQuoteHTML(quotePairsArray) {
+        if (quotePairsArray.length === 0)
+          return `<div class="quote-box">Insufficient qualitative feedback provided.</div>`;
+
+        return quotePairsArray
+          .map((q, index) => {
+            // Assign a random pastel border color for visual flair
+            const borderColor =
+              pastelPaletteList[index % pastelPaletteList.length];
+            return `
+                <div class="quote-box" style="border-left-color: ${borderColor};">
+                    "${q.quote}"
+                    <span class="respondent-tag" style="color: ${borderColor};">
+                        <i class="fa-solid fa-arrow-right"></i> Target: ${q.category || "Unspecified"}
+                    </span>
+                </div>
+            `;
+          })
+          .join("");
+      }
+
+      function processData(rawData) {
+        // Arrays for Pie Charts (Raw Strings)
+        const pieLocation = [];
+        const pieInvest = [];
+        const pieCompany = [];
+        const wordCloudFactors = [];
+
+        // Arrays for Quotes (Objects linking Category + Reason)
+        const quotesLocation = [];
+        const quotesInvest = [];
+        const quotesCompany = [];
+
+        // Parse rows based on User's Prompt Mapping:
+        // F=5 (Loc), G=6 (LocReason)
+        // H=7 (Inv), I=8 (InvReason)
+        // M=12 (Comp), O=14 (CompReason)
+        // S=18 (Factors)
+        for (let i = 1; i < rawData.length; i++) {
+          let row = rawData[i];
+
+          // Location
+          if (row[5]) {
+            pieLocation.push(row[5]);
+            if (row[6])
+              quotesLocation.push({
+                category: row[5].trim(),
+                quote: row[6].trim(),
+              });
+          }
+
+          // Investment
+          if (row[7]) {
+            pieInvest.push(row[7]);
+            if (row[8])
+              quotesInvest.push({
+                category: row[7].trim(),
+                quote: row[8].trim(),
+              });
+          }
+
+          // Company
+          if (row[12]) {
+            pieCompany.push(row[12]);
+            if (row[14])
+              quotesCompany.push({
+                category: row[12].trim(),
+                quote: row[14].trim(),
+              });
+          }
+
+          // Word Cloud Factors
+          if (row[18]) wordCloudFactors.push(row[18]);
+        }
+
+        /* --- Inject 25 Linked Quotes --- */
+        document.getElementById("quotes-location").innerHTML =
+          generateQuoteHTML(extractTopQuotes(quotesLocation, 25));
+        document.getElementById("quotes-investment").innerHTML =
+          generateQuoteHTML(extractTopQuotes(quotesInvest, 25));
+        document.getElementById("quotes-company").innerHTML = generateQuoteHTML(
+          extractTopQuotes(quotesCompany, 25),
+        );
+
+        /* --- Setup Chart.js Defaults --- */
+        Chart.defaults.color = "#ffffff";
+        Chart.defaults.font.family = "Poppins";
+
+        const pieOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "right",
+              labels: {
+                color: "#ffffff",
+                font: { size: 12, weight: "500" },
+                usePointStyle: true,
+                padding: 15,
+              },
+            },
+            tooltip: {
+              backgroundColor: "rgba(10, 35, 35, 0.95)",
+              titleColor: "#ffffff",
+              bodyColor: "#ffffff",
+              borderColor: "#8fe7e7",
+              borderWidth: 1,
+              padding: 15,
+              titleFont: { size: 15, weight: "bold", family: "Poppins" },
+              bodyFont: { size: 14, family: "Poppins" },
+              callbacks: {
+                label: function (context) {
+                  let value = context.raw;
+                  let total =
+                    context.chart._metasets[context.datasetIndex].total;
+                  let percentage = Math.round((value / total) * 100) + "%";
+                  return ` ${context.label}: ${value} Responses (${percentage})`;
+                },
+              },
+            },
+          },
+        };
+
+        /* Neon Glowing Plugin for Pie Borders */
+        const glowingPiePlugin = {
+          id: "glowingPie",
+          beforeDatasetDraw(chart, args, options) {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.shadowColor = "rgba(255, 255, 255, 0.6)";
+            ctx.shadowBlur = 10;
+          },
+          afterDatasetDraw(chart) {
+            chart.ctx.restore();
+          },
+        };
+        Chart.register(glowingPiePlugin);
+
+        /* --- Render Pie Charts --- */
+
+        // 1. Location PIE
+        const locCounts = tallyCategories(pieLocation);
+        new Chart(document.getElementById("chart-location").getContext("2d"), {
+          type: "pie",
+          data: {
+            labels: Object.keys(locCounts),
+            datasets: [
+              {
+                data: Object.values(locCounts),
+                backgroundColor: pastelPaletteList,
+                borderColor: "#ffffff",
+                borderWidth: 1.5,
+                hoverOffset: 10,
+              },
+            ],
+          },
+          options: pieOptions,
+        });
+
+        // 2. Investment PIE (Reverse palette for variety)
+        const invCounts = tallyCategories(pieInvest);
+        new Chart(
+          document.getElementById("chart-investment").getContext("2d"),
+          {
+            type: "pie",
+            data: {
+              labels: Object.keys(invCounts),
+              datasets: [
+                {
+                  data: Object.values(invCounts),
+                  backgroundColor: [...pastelPaletteList].reverse(),
+                  borderColor: "#ffffff",
+                  borderWidth: 1.5,
+                  hoverOffset: 10,
+                },
+              ],
+            },
+            options: pieOptions,
+          },
+        );
+
+        // 3. Company PIE (Shuffle palette for variety)
+        const compCounts = tallyCategories(pieCompany);
+        new Chart(document.getElementById("chart-company").getContext("2d"), {
+          type: "pie",
+          data: {
+            labels: Object.keys(compCounts),
+            datasets: [
+              {
+                data: Object.values(compCounts),
+                backgroundColor: [...pastelPaletteList].sort(
+                  () => 0.5 - Math.random(),
+                ),
+                borderColor: "#ffffff",
+                borderWidth: 1.5,
+                hoverOffset: 10,
+              },
+            ],
+          },
+          options: pieOptions,
+        });
+
+        /* --- Render Pastel Word Cloud --- */
+        renderWordCloud(wordCloudFactors);
+      }
+
+      function renderWordCloud(textArray) {
+        const wordCounts = {};
+
+        // Tokenize all responses in Col S
+        textArray.forEach((text) => {
+          if (!text) return;
+          const words = text
+            .toLowerCase()
+            .replace(/[^\w\s,]/g, "")
+            .split(/[\s,]+/);
+          words.forEach((word) => {
+            // Only count valid words > 3 chars
+            if (word.length > 3 && !stopWords.has(word)) {
+              wordCounts[word] = (wordCounts[word] || 0) + 1;
+            }
+          });
+        });
+
+        let maxFreq = 0;
+        let minFreq = Infinity;
+        Object.values(wordCounts).forEach((count) => {
+          if (count > maxFreq) maxFreq = count;
+          if (count < minFreq) minFreq = count;
+        });
+
+        const cloudContainer = document.getElementById("word-cloud-container");
+        const words = Object.keys(wordCounts);
+
+        // Randomize order for scattered look
+        words.sort(() => Math.random() - 0.5);
+
+        words.forEach((word) => {
+          const count = wordCounts[word];
+
+          // Calculate font size (14px to 60px)
+          const fontSize =
+            14 + ((count - minFreq) / (maxFreq - minFreq || 1)) * 46;
+
+          // Pick a random pastel color
+          const color =
+            pastelPaletteList[
+              Math.floor(Math.random() * pastelPaletteList.length)
+            ];
+
+          const span = document.createElement("span");
+          span.className = "cloud-word";
+          span.textContent = word;
+          span.style.fontSize = `${fontSize}px`;
+          span.style.color = color;
+
+          // Large words glow more, small words are slightly transparent
+          if (fontSize > 35) {
+            span.style.textShadow = `0 0 10px ${color}80`;
+          } else if (fontSize < 20) {
+            span.style.opacity = Math.random() * 0.4 + 0.6;
+          }
+
+          // Tooltip showing exact count
+          span.title = `Factor: "${word}" | Mentions: ${count}`;
+
+          cloudContainer.appendChild(span);
+        });
+      }
+    </script>
+  </body>
+</html>

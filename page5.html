@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Geospatial Analysis</title>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* ---------------- BASE & COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+      body {
+        background-color: #0e3333;
+        color: #ffffff;
+        overflow-x: hidden;
+        position: relative;
+        min-height: 100vh;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- ANIMATED LOCATION MARKER BACKGROUND ---------------- */
+      #marker-bg-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .bg-marker {
+        position: absolute;
+        color: rgba(143, 231, 231, 0.12); /* Faint theme color #8fe7e7 */
+        font-size: 24px;
+        animation: pulseFade 4s infinite alternate;
+        filter: drop-shadow(0 0 10px rgba(143, 231, 231, 0.3));
+      }
+
+      @keyframes pulseFade {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+        100% {
+          transform: translateY(-20px) scale(1.2);
+          opacity: 0.05;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: fixed;
+        top: 25px;
+        width: 96%;
+        left: 2%;
+        display: flex;
+        justify-content: space-between;
+        z-index: 100;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 30px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #1a5050;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+      }
+      .btn-nav i {
+        margin: 0 8px;
+        transition: transform 0.3s ease;
+      }
+
+      /* ---------------- MAIN LAYOUT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 90px 2% 40px 2%;
+        max-width: 1600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .header-box {
+        text-align: center;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.4rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* ---------------- TOP MAP AREA (WIDE VIEW) ---------------- */
+      .map-section {
+        width: 100%;
+        height: 520px; /* Expansive layout for wide view area */
+        background: rgba(14, 51, 51, 0.6);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        animation: fadeInUp 1s ease-out forwards;
+      }
+
+      .map-wrapper {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #2c6e6e;
+      }
+
+      .map-wrapper iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* ---------------- BOTTOM INSIGHTS ROW (4 CARDS GRID) ---------------- */
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(
+          4,
+          1fr
+        ); /* Forms 4 neat horizontal columns */
+        gap: 20px;
+        width: 100%;
+      }
+
+      .insight-card {
+        background: rgba(26, 80, 80, 0.35); /* #1a5050 glass backdrop */
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* Staggered load animation */
+      .insight-card:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .insight-card:nth-child(2) {
+        animation-delay: 0.4s;
+      }
+      .insight-card:nth-child(3) {
+        animation-delay: 0.6s;
+      }
+      .insight-card:nth-child(4) {
+        animation-delay: 0.8s;
+      }
+
+      /* Highly Attractive Glowing Hover Animations */
+      .insight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #8fe7e7;
+        box-shadow:
+          0 20px 40px rgba(44, 110, 110, 0.6),
+          0 0 25px rgba(143, 231, 231, 0.4);
+      }
+
+      /* Top Expanding Laser Line on hover */
+      .insight-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2c6e6e, #8fe7e7);
+        transition: width 0.4s ease;
+      }
+      .insight-card:hover::after {
+        width: 100%;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(143, 231, 231, 0.2);
+        padding-bottom: 10px;
+      }
+
+      .card-icon {
+        font-size: 1.6rem;
+        color: #8fe7e7;
+        text-shadow: 0 0 10px rgba(143, 231, 231, 0.5);
+      }
+
+      .card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+      }
+
+      .card-body ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .card-body li {
+        position: relative;
+        padding-left: 18px;
+        margin-bottom: 10px;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        color: #d4eeee;
+      }
+
+      .card-body li::before {
+        content: "⇛";
+        position: absolute;
+        left: 0;
+        color: #8fe7e7;
+        font-weight: bold;
+      }
+
+      .highlight-text {
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      /* Entrance Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Breakpoints */
+      @media (max-width: 1200px) {
+        .insights-grid {
+          grid-template-columns: repeat(2, 1fr);
+        } /* Transitions to 2x2 grid */
+      }
+      @media (max-width: 768px) {
+        .insights-grid {
+          grid-template-columns: 1fr;
+        } /* Stack vertically on small screens */
+        .map-section {
+          height: 380px;
+        }
+        .header-box h1 {
+          font-size: 1.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dynamic Geospatial Location Marker Canvas -->
+    <div id="marker-bg-container"></div>
+
+    <!-- Navigation Header Hooks -->
+    <div class="nav-container">
+      <a href="page4.html" class="btn-nav btn-back"
+        ><i class="fas fa-arrow-left"></i> Back</a
+      >
+      <a href="page6.html" class="btn-nav btn-next"
+        >Next <i class="fas fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Geospatial Analysis of Competitor Apartment Projects</h1>
+        <h2>Territorial Mapping & Market Density Assessment</h2>
+      </div>
+
+      <!-- TOP AREA: ARCGIS INTELLIGENCE MAP -->
+      <div class="map-section">
+        <div class="map-wrapper">
+          <iframe
+            src="https://mrt.maps.arcgis.com/apps/instant/interactivelegend/index.html?appid=028d120ad07145f597d576b13cd5b6f9"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+
+      <!-- BOTTOM AREA: FLOATING INSIGHT CARDS -->
+      <div class="insights-grid">
+        <!-- Card 1 -->
+        <div class="insight-card">
+          <div class="card-header">
+            <i class="fas fa-crosshairs card-icon"></i>
+            <div class="card-title">MARKET CONCENTRATION INSIGHTS</div>
+          </div>
+          <div class="card-body">
+            <ul>
+              <li>
+                <span class="highlight-text">Highest Project Density:</span>
+                Colombo Core (Colombo 03, 04, and 07) forms the high-density
+                epicenter for luxury developments.
+              </li>
+              <li>
+                <span class="highlight-text">Strongest Competition:</span>
+                Periphery borders like Rajagiriya and Nawala show
+                ultra-aggressive multi-developer targeting.
+              </li>
+              <li>
+                <span class="highlight-text">Most Developer Activity:</span>
+                Greater Colombo captures 85%+ of active footprint, driven by
+                urban transit infrastructure.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="insight-card">
+          <div class="card-header">
+            <i class="fas fa-chess-king card-icon"></i>
+            <div class="card-title">COMPANY DOMINANCE ZONES</div>
+          </div>
+          <div class="card-body">
+            <ul>
+              <li>
+                <span class="highlight-text">Colombo:</span> JKP and Fairway
+                hold high-tier luxury territory dominance.
+              </li>
+              <li>
+                <span class="highlight-text">Suburbs:</span>
+                <span class="highlight-text" style="color: #8fe7e7"
+                  >Prime Group</span
+                >
+                commands structural dominance in Thalawathugoda, Kottawa, and
+                Malabe.
+              </li>
+              <li>
+                <span class="highlight-text">Coastal Regions:</span> Blue Ocean
+                Group and Home Lands Skyline actively build along the
+                Western/Southern shore belts.
+              </li>
+              <li>
+                <span class="highlight-text">Emerging Cities:</span> Prime Group
+                confidently leads the pivot into Kurunegala and Kandy hubs.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="insight-card">
+          <div class="card-header">
+            <i class="fas fa-route card-icon"></i>
+            <div class="card-title">EMERGING DEVELOPMENT CORRIDORS</div>
+          </div>
+          <div class="card-body">
+            <ul>
+              <li>
+                <span class="highlight-text">The Highway Belt:</span> Properties
+                touching expressway interchanges (e.g., Kahathuduwa) demonstrate
+                rapid absorption rates.
+              </li>
+              <li>
+                <span class="highlight-text">The Northern Axis:</span> Wattala
+                and Negombo are rapidly converting to vertical living due to
+                airport accessibility.
+              </li>
+              <li>
+                <span class="highlight-text">The Tech Segment:</span> The
+                Malabe-Athurugiriya corridor maintains massive momentum for
+                mid-tier lifestyle apartments.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="insight-card">
+          <div class="card-header">
+            <i
+              class="fas fa-fire card-icon"
+              style="
+                color: #ff6b6b;
+                text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+              "
+            ></i>
+            <div class="card-title">HIGH-COMPETITION HOTSPOTS</div>
+          </div>
+          <div class="card-body">
+            <ul>
+              <li>
+                <span class="highlight-text">Rajagiriya (Red Zone):</span>
+                Massive overlap between Fairway, Prime Group, and Global Housing
+                where land premium is peaking.
+              </li>
+              <li>
+                <span class="highlight-text">Colombo 06 (Red Zone):</span>
+                Overwhelming saturation of Blue Ocean and Span Tower footprints
+                matching upper-middle income brackets.
+              </li>
+              <li>
+                <span class="highlight-text">Nugegoda Junction:</span> A
+                critical central crossroads where nearly all major players
+                collide for regional exposure.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script for Dynamic Map Marker Grid Generation -->
+    <script>
+      const bgContainer = document.getElementById("marker-bg-container");
+      const markerCount = 35; // Dense layout of pins for background texturing
+
+      for (let i = 0; i < markerCount; i++) {
+        let marker = document.createElement("i");
+        marker.className = "fas fa-map-marker-alt bg-marker";
+
+        // Random spatial coordinates
+        marker.style.left = Math.random() * 100 + "vw";
+        marker.style.top = Math.random() * 100 + "vh";
+
+        // Offset delays and timings to maximize organic rhythm
+        let duration = Math.random() * 3 + 3;
+        let delay = Math.random() * 4;
+
+        marker.style.animationDuration = duration + "s";
+        marker.style.animationDelay = delay + "s";
+        marker.style.fontSize = Math.random() * 12 + 15 + "px";
+
+        bgContainer.appendChild(marker);
+      }
+    </script>
+  </body>
+</html>

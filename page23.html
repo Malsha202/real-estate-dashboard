@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Group - Floor Area vs Locality Matrix</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ---------------- CORE & THEME COLORS ---------------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+        
+        body { 
+            background: linear-gradient(rgba(14, 51, 51, 0.9), rgba(14, 51, 51, 0.96)), url('image25.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0e3333; }
+        ::-webkit-scrollbar-thumb { background: #2c6e6e; border-radius: 4px; }
+
+        /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+        #particle-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .glow-particle {
+            position: absolute;
+            background: #8fe7e7;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #8fe7e7, 0 0 30px #2c6e6e;
+            animation: rhythmicFloat infinite ease-in-out alternate;
+        }
+
+        @keyframes rhythmicFloat {
+            0% { transform: translateY(0) scale(0.8); opacity: 0.1; }
+            50% { opacity: 0.6; box-shadow: 0 0 20px #8fe7e7, 0 0 40px #8fe7e7; }
+            100% { transform: translateY(-30px) scale(1.1); opacity: 0.05; }
+        }
+
+        /* ---------------- NAVIGATION ---------------- */
+        .nav-container {
+            position: relative; z-index: 100;
+            padding: 30px 4% 10px;
+            display: flex; justify-content: space-between;
+        }
+        .btn-nav {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 35px; font-size: 0.95rem; font-weight: 600; 
+            color: #ffffff; background-color: #2c6e6e; border: 2px solid #2d6b6b;
+            border-radius: 50px; text-decoration: none; transition: all 0.3s ease; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-nav:hover { 
+            background-color: #0e3333; border-color: #8fe7e7; 
+            transform: translateY(-4px); box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3); 
+        }
+
+        /* ---------------- MAIN CONTENT ---------------- */
+        .main-content {
+            position: relative; z-index: 10;
+            padding: 10px 4% 50px; max-width: 1800px; margin: 0 auto;
+        }
+
+        .header-box { text-align: center; margin-bottom: 25px; animation: fadeInDown 1s ease-out; }
+        .header-box h1 { font-size: 2.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .header-box h2 { font-size: 1.05rem; color: #8fe7e7; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9; line-height: 1.5; }
+        .header-box .legend-highlights { margin-top: 8px; font-size: 0.9rem; color: #d4eeee; }
+
+        /* Interaction Instruction */
+        .interaction-hint {
+            text-align: center; color: #00ff78; font-size: 0.95rem; font-weight: 500; 
+            margin-bottom: 30px; animation: pulse 2s infinite; letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 255, 120, 0.4);
+        }
+
+        /* Loading Status */
+        #data-status {
+            text-align: center; color: #8fe7e7; font-size: 1.2rem; font-weight: 500; 
+            animation: pulse 1.5s infinite; margin-bottom: 30px;
+        }
+
+        /* ---------------- CHARTS GRID (8 Charts) ---------------- */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            display: none; /* Hidden until data loads */
+            margin-bottom: 50px;
+        }
+
+        .chart-glass-panel {
+            background: rgba(26, 80, 80, 0.35); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(143, 231, 231, 0.2); 
+            border-radius: 24px;
+            padding: 25px 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(14, 51, 51, 0.5);
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        /* Stagger chart loading animations */
+        .chart-glass-panel:nth-child(1) { animation-delay: 0.1s; }
+        .chart-glass-panel:nth-child(2) { animation-delay: 0.2s; }
+        .chart-glass-panel:nth-child(3) { animation-delay: 0.3s; }
+        .chart-glass-panel:nth-child(4) { animation-delay: 0.4s; }
+        .chart-glass-panel:nth-child(5) { animation-delay: 0.5s; }
+        .chart-glass-panel:nth-child(6) { animation-delay: 0.6s; }
+        .chart-glass-panel:nth-child(7) { animation-delay: 0.7s; }
+        .chart-glass-panel:nth-child(8) { animation-delay: 0.8s; }
+
+        .chart-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(143, 231, 231, 0.2);
+            padding-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .chart-wrapper {
+            height: 400px; 
+            width: 100%;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        /* Responsive */
+        @media (max-width: 1200px) { 
+            .charts-grid { grid-template-columns: 1fr; } 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Glowing Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+        <a href="page22.html" class="btn-nav"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <a href="index.html" class="btn-nav">Home <i class="fa-solid fa-house"></i></a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="header-box">
+            <h1>Floor Area vs Locality Matrix</h1>
+            <h2>
+                X-Axis: Locality | Y-Axis: Floor Area (Sq.Ft.) <br>
+                Bubble Color Denotes Company | Bubble Size Denotes Sale Price Per Sq.Ft.
+            </h2>
+        </div>
+
+        <div class="interaction-hint">
+            <i class="fa-solid fa-hand-pointer"></i> Hover over any bubble to view the full glowing project details panel.
+        </div>
+
+        <div id="data-status">Fetching Live Configuration Data...</div>
+
+        <!-- 8-Chart Grid Container -->
+        <div class="charts-grid" id="charts-grid-container">
+            
+            <div class="chart-glass-panel">
+                <div class="chart-title">1 BR, 1 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_1BR_1WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">2 BR, 1 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_2BR_1WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">2 BR, 2 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_2BR_2WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">3 BR, 2 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_3BR_2WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">3 BR, 3 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_3BR_3WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">4 BR, 3 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_4BR_3WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">4 BR, 4 WR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_4BR_4WR"></canvas></div>
+            </div>
+
+            <div class="chart-glass-panel">
+                <div class="chart-title">More than 4 BR Configuration</div>
+                <div class="chart-wrapper"><canvas id="chart_4PLUS"></canvas></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------------------
+           1. PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+        const particleContainer = document.getElementById('particle-container');
+        for(let i = 0; i < 40; i++) {
+            let particle = document.createElement('div');
+            particle.className = 'glow-particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            let size = Math.random() * 5 + 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            particle.style.animationDelay = (Math.random() * 5) + 's';
+            particleContainer.appendChild(particle);
+        }
+
+        /* -------------------------------------------------------------------------
+           2. CHART CONFIGURATION MAPPING
+           Matches exact column indices based on standard Excel (A=0, B=1...)
+        ------------------------------------------------------------------------- */
+        const chartConfigs = [
+            { id: "chart_1BR_1WR", name: "1 BR, 1 WR", areaCol: 7,  priceCol: 8  },
+            { id: "chart_2BR_1WR", name: "2 BR, 1 WR", areaCol: 9,  priceCol: 10 },
+            { id: "chart_2BR_2WR", name: "2 BR, 2 WR", areaCol: 11, priceCol: 12 },
+            { id: "chart_3BR_2WR", name: "3 BR, 2 WR", areaCol: 13, priceCol: 14 },
+            { id: "chart_3BR_3WR", name: "3 BR, 3 WR", areaCol: 15, priceCol: 16 },
+            { id: "chart_4BR_3WR", name: "4 BR, 3 WR", areaCol: 19, priceCol: 20 },
+            { id: "chart_4BR_4WR", name: "4 BR, 4 WR", areaCol: 21, priceCol: 22 },
+            { id: "chart_4PLUS",   name: "More than 4 BR", areaCol: 23, priceCol: 24 }
+        ];
+
+        /* -------------------------------------------------------------------------
+           3. LIVE FETCH LOGIC 
+        ------------------------------------------------------------------------- */
+        // Auto-converting /pubhtml to /pub?output=csv for raw parsing
+        const publishedCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSrP5dnxLY_KjAvUaHsmiwMuaBUP12EDnSzT9qIqTtv7C2uD6WXy4OfpZ3BwB-4eh0xGSNBfxGWH9dO/pub?output=csv";
+
+        Papa.parse(publishedCsvUrl, {
+            download: true,
+            header: false,
+            skipEmptyLines: true,
+            complete: function(results) {
+                document.getElementById('data-status').style.display = 'none';
+                document.getElementById('charts-grid-container').style.display = 'grid';
+                processAndRenderAllCharts(results.data);
+            },
+            error: function(err) {
+                document.getElementById('data-status').innerText = "Error connecting to live data. Please check URL.";
+                document.getElementById('data-status').style.color = "#ff6b6b";
+            }
+        });
+
+        /* -------------------------------------------------------------------------
+           4. DATA PROCESSING & 8-CHART RENDERER
+        ------------------------------------------------------------------------- */
+        function processAndRenderAllCharts(rawData) {
+            
+            const uniqueLocalities = new Set();
+            const companyColorMap = {};
+            
+            // Highly distinct neon palette for competitors
+            const colorPalette = [
+                "rgba(143, 231, 231, 0.85)", "rgba(0, 255, 120, 0.85)", "rgba(255, 180, 0, 0.85)",
+                "rgba(255, 0, 150, 0.85)", "rgba(0, 140, 255, 0.85)", "rgba(255, 50, 50, 0.85)",
+                "rgba(180, 0, 255, 0.85)", "rgba(50, 255, 50, 0.85)", "rgba(255, 120, 0, 0.85)",
+                "rgba(255, 255, 255, 0.85)", "rgba(200, 200, 200, 0.85)", "rgba(255, 255, 0, 0.85)"
+            ];
+            let colorIndex = 0;
+
+            // Initialize storage structure: { chartId: { CompanyName: [ {x, y, r, meta}... ] } }
+            const chartDataStorage = {};
+            chartConfigs.forEach(config => {
+                chartDataStorage[config.id] = {};
+            });
+
+            // Loop through rows (skip header row 0)
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                
+                // Metadata Columns
+                let company   = row[0] ? row[0].trim() : "Unknown"; 
+                let project   = row[2] ? row[2].trim() : "Unknown Project"; 
+                let locality  = row[3] ? row[3].trim() : null; 
+                let status    = row[4] ? row[4].trim() : "N/A"; 
+                let condition = row[5] ? row[5].trim() : "N/A"; 
+                let furnished = row[6] ? row[6].trim() : "N/A"; 
+
+                if (locality) {
+                    uniqueLocalities.add(locality);
+
+                    // Assign persistent color to company
+                    if (!companyColorMap[company]) {
+                        companyColorMap[company] = colorPalette[colorIndex % colorPalette.length];
+                        colorIndex++;
+                    }
+
+                    // Process each of the 8 configurations for this row
+                    chartConfigs.forEach(config => {
+                        let rawArea = row[config.areaCol] ? row[config.areaCol].toString().replace(/,/g, '').replace(/[^\d.-]/g, '').trim() : "0";
+                        let area = parseFloat(rawArea) || 0;
+                        
+                        let rawPrice = row[config.priceCol] ? row[config.priceCol].toString().replace(/,/g, '').replace(/Rs/gi, '').trim() : "0";
+                        let price = parseFloat(rawPrice) || 0;
+
+                        // Only plot if BOTH Area and Price exist for this specific configuration
+                        if (area > 0 && price > 0) {
+                            
+                            // Calculate dynamic bubble radius based on Price per Sqft
+                            // Example scaling: 50,000 / 2500 = 20px. 
+                            let calculatedRadius = Math.max(6, Math.min(30, price / 2500)); 
+
+                            // Initialize company array for this chart if it doesn't exist
+                            if (!chartDataStorage[config.id][company]) {
+                                chartDataStorage[config.id][company] = [];
+                            }
+
+                            chartDataStorage[config.id][company].push({
+                                x: locality,
+                                y: area,
+                                r: calculatedRadius,
+                                meta: {
+                                    company: company,
+                                    project: project,
+                                    status: status,
+                                    condition: condition,
+                                    furnished: furnished,
+                                    priceStr: price.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
+            const localitiesArray = Array.from(uniqueLocalities).sort();
+
+            /* Custom Plugin: Neon Glowing Bubbles */
+            const glowingBubblePlugin = {
+                id: 'glowingBubble',
+                beforeDatasetsDraw(chart, args, options) {
+                    const { ctx } = chart;
+                    chart.data.datasets.forEach((dataset, index) => {
+                        const meta = chart.getDatasetMeta(index);
+                        meta.data.forEach((element) => {
+                            ctx.save();
+                            ctx.shadowColor = dataset.borderColor;
+                            ctx.shadowBlur = 12; // Neon Glow
+                            ctx.beginPath();
+                            ctx.arc(element.x, element.y, element.options.radius, 0, Math.PI * 2);
+                            ctx.fillStyle = dataset.backgroundColor;
+                            ctx.fill();
+                            ctx.restore();
+                        });
+                    });
+                }
+            };
+            Chart.register(glowingBubblePlugin);
+            Chart.defaults.color = '#e0e0e0';
+            Chart.defaults.font.family = 'Poppins';
+
+            // Generate a chart for each configuration
+            chartConfigs.forEach(config => {
+                
+                // Prepare Datasets for this specific chart based on populated companies
+                const specificChartData = chartDataStorage[config.id];
+                const datasets = Object.keys(specificChartData).map(comp => {
+                    return {
+                        label: comp,
+                        data: specificChartData[comp],
+                        backgroundColor: companyColorMap[comp],
+                        borderColor: companyColorMap[comp].replace('0.85)', '1)'),
+                        borderWidth: 2,
+                        hoverBorderWidth: 4,
+                        hoverBorderColor: '#ffffff'
+                    };
+                });
+
+                // Render Chart
+                const ctx = document.getElementById(config.id).getContext('2d');
+                new Chart(ctx, {
+                    type: 'bubble',
+                    data: {
+                        labels: localitiesArray, // Explicitly define category labels for X-axis
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#ffffff', font: { size: 11, family: 'Poppins' }, padding: 10, usePointStyle: true }
+                            },
+                            // CUSTOM GLOWING MULTI-DATA TOOLTIP
+                            tooltip: {
+                                backgroundColor: 'rgba(10, 35, 35, 0.98)',
+                                titleColor: '#8fe7e7',
+                                bodyColor: '#ffffff',
+                                borderColor: '#2c6e6e',
+                                borderWidth: 1,
+                                padding: 18,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                titleFont: { size: 16, weight: 'bold', family: 'Poppins' },
+                                bodyFont: { size: 13, family: 'Poppins', lineHeight: 1.6 },
+                                callbacks: {
+                                    // Title: Project Name
+                                    title: function(context) {
+                                        return context[0].raw.meta.project; 
+                                    },
+                                    // Body: Detailed list of properties
+                                    label: function(context) {
+                                        const meta = context.raw.meta;
+                                        return [
+                                            `🏢 Company: ${meta.company}`,
+                                            `📍 Locality: ${context.raw.x}`,
+                                            `📐 Floor Area: ${context.raw.y} sq.ft`,
+                                            `💰 Sale Price: LKR ${meta.priceStr} / sq.ft`,
+                                            `🔑 Status: ${meta.status}`,
+                                            `💎 Condition: ${meta.condition}`,
+                                            `🛋️ Furnished State: ${meta.furnished}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'category', 
+                                ticks: { color: '#ffffff', font: { size: 11, weight: '500' }, maxRotation: 45, minRotation: 45 },
+                                grid: { color: 'rgba(143, 231, 231, 0.05)' },
+                                title: { display: true, text: 'Locality Zones', color: '#8fe7e7', font: { size: 13, weight: 'bold' } }
+                            },
+                            y: {
+                                title: { display: true, text: 'Floor Area (Sq.Ft.)', color: '#8fe7e7', font: { size: 13, weight: 'bold' } },
+                                ticks: { color: '#ffffff', font: { size: 11 } },
+                                grid: { color: 'rgba(143, 231, 231, 0.08)' }
+                            }
+                        }
+                    }
+                });
+            }); // End of chart config loop
+        }
+    </script>
+</body>
+</html>

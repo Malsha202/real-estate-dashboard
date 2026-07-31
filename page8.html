@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Territorial Dominance Matrix</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      /* ---------------- CORE & THEME COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.96)),
+          url("image10.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .glow-particle {
+        position: absolute;
+        background: #8fe7e7;
+        border-radius: 50%;
+        box-shadow:
+          0 0 15px #8fe7e7,
+          0 0 30px #2c6e6e;
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.6;
+          box-shadow:
+            0 0 20px #8fe7e7,
+            0 0 40px #8fe7e7;
+        }
+        100% {
+          transform: translateY(-30px) scale(1.1);
+          opacity: 0.05;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      /* ---------------- MAIN CONTENT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* ---------------- CHART GLASS PANEL ---------------- */
+      .chart-glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 30px 40px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(14, 51, 51, 0.5);
+        margin-bottom: 40px;
+        animation: fadeInUp 1s ease-out;
+        position: relative;
+      }
+
+      .chart-glass-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        pointer-events: none;
+      }
+
+      .chart-wrapper {
+        height: 550px;
+        width: 100%;
+      }
+
+      /* Loading Status */
+      #data-status {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #8fe7e7;
+        font-size: 1.2rem;
+        font-weight: 500;
+        animation: pulse 1.5s infinite;
+        text-align: center;
+        width: 80%;
+      }
+
+      /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+      }
+
+      .insight-card {
+        background: rgba(14, 51, 51, 0.5);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(44, 110, 110, 0.5);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .insight-card:nth-child(1) {
+        animation-delay: 0.3s;
+      }
+      .insight-card:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+      .insight-card:nth-child(3) {
+        animation-delay: 0.7s;
+      }
+
+      .insight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #8fe7e7;
+        box-shadow:
+          0 15px 40px rgba(44, 110, 110, 0.8),
+          inset 0 0 15px rgba(143, 231, 231, 0.2);
+      }
+
+      .insight-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c6e6e, #8fe7e7, #ffffff);
+        transition: width 0.5s ease;
+      }
+      .insight-card:hover::after {
+        width: 100%;
+      }
+
+      .insight-icon {
+        font-size: 2.2rem;
+        color: #8fe7e7;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 0 8px rgba(143, 231, 231, 0.6));
+      }
+
+      .insight-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .insight-text {
+        font-size: 0.95rem;
+        color: #d4eeee;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      .highlight {
+        color: #ffffff;
+        font-weight: 600;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .insights-grid {
+          grid-template-columns: 1fr;
+        }
+        .chart-wrapper {
+          height: 500px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Glowing Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+      <a href="page7.html" class="btn-nav"
+        ><i class="fa-solid fa-arrow-left"></i> Back</a
+      >
+      <a href="page9.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Territorial Dominance Matrix</h1>
+        <h2>Live Locality-Wise Competitor Project Distribution</h2>
+      </div>
+
+      <!-- Chart Area -->
+      <div class="chart-glass-panel">
+        <div id="data-status">Establishing Live Connection to Database...</div>
+        <div class="chart-wrapper">
+          <canvas id="localityStackedChart" style="display: none"></canvas>
+        </div>
+      </div>
+
+      <!-- Executive Insights -->
+      <div class="insights-grid">
+        <div class="insight-card">
+          <i class="fa-solid fa-city insight-icon"></i>
+          <div class="insight-title">Urban Core Contested Zones</div>
+          <div class="insight-text">
+            Tall, multi-colored stacks indicate
+            <span class="highlight">High-Density Overlap</span>. Localities like
+            Colombo 6, Rajagiriya, and Colombo 7 attract almost every developer,
+            creating intense price wars but guaranteeing high absorption rates.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-map-pin insight-icon"></i>
+          <div class="insight-title">Suburban Monopolies</div>
+          <div class="insight-text">
+            Stacks dominated by a single color reveal
+            <span class="highlight">Territorial Monopolies</span>. Identifying
+            these zones allows top management to recognize where a single
+            developer controls the pricing baseline without immediate
+            competition.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-chess-knight insight-icon"></i>
+          <div class="insight-title">Strategic Expansion Opportunities</div>
+          <div class="insight-text">
+            By monitoring the emerging localities (the shorter bars on the right
+            side of the chart), <span class="highlight">Prime Group</span> can
+            proactively identify untapped suburban markets before competitor
+            saturation occurs.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------------------------------------------------------------
+           1. PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+      const particleContainer = document.getElementById("particle-container");
+      for (let i = 0; i < 40; i++) {
+        let particle = document.createElement("div");
+        particle.className = "glow-particle";
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        let size = Math.random() * 5 + 3;
+        particle.style.width = size + "px";
+        particle.style.height = size + "px";
+        particle.style.animationDuration = Math.random() * 3 + 3 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      /* -------------------------------------------------------------------------
+           2. FALLBACK DATA (In case of strict CORS blocks)
+        ------------------------------------------------------------------------- */
+      const fallbackData = [
+        ["Company Name", "Col2", "Col3", "Col4", "Col5", "Locality"],
+        ["Prime Group", "", "", "", "", "Thalawathugoda"],
+        ["Prime Group", "", "", "", "", "Malabe"],
+        ["Prime Group", "", "", "", "", "Rajagiriya"],
+        ["Prime Group", "", "", "", "", "Colombo 7"],
+        ["Blue Ocean Group", "", "", "", "", "Colombo 4"],
+        ["Blue Ocean Group", "", "", "", "", "Colombo 6"],
+        ["Blue Ocean Group", "", "", "", "", "Mount Lavinia"],
+        ["John Keells Properties", "", "", "", "", "Colombo 2"],
+        ["John Keells Properties", "", "", "", "", "Colombo 2"],
+        ["Home Lands Skyline", "", "", "", "", "Malabe"],
+        ["Home Lands Skyline", "", "", "", "", "Athurugiriya"],
+        ["Rush Lanka Group", "", "", "", "", "Colombo 6"],
+        ["Span Tower", "", "", "", "", "Colombo 6"],
+        ["Span Tower", "", "", "", "", "Dehiwala"],
+        ["Fairway Properties", "", "", "", "", "Rajagiriya"],
+      ];
+
+      /* -------------------------------------------------------------------------
+           3. LIVE FETCH LOGIC (Robust Native Fetch)
+        ------------------------------------------------------------------------- */
+      const googleSheetCSVUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzBmHcRYbWwcEMDaQOX2WCYzDonXnspOfyj3WVWfE_d9dxGvePL_DgP-trm0z0mP8a4lmz-MXWV3HS/pub?output=csv";
+
+      fetch(googleSheetCSVUrl)
+        .then((response) => {
+          if (!response.ok)
+            throw new Error("Network error fetching Google Sheet");
+          return response.text();
+        })
+        .then((csvText) => {
+          Papa.parse(csvText, {
+            header: false, // Extracting by index: Col A = 0, Col F = 5
+            skipEmptyLines: true,
+            complete: function (results) {
+              document.getElementById("data-status").style.display = "none";
+              document.getElementById("localityStackedChart").style.display =
+                "block";
+              processAndRenderData(results.data);
+            },
+          });
+        })
+        .catch((err) => {
+          console.warn(
+            "Live Fetch Blocked by Browser. Loading fallback data. Error:",
+            err,
+          );
+          const statusDiv = document.getElementById("data-status");
+          statusDiv.innerText =
+            "⚠️ Browser blocked Live Connection. Displaying Sample Backup Data.";
+          statusDiv.style.color = "#ffb400";
+
+          setTimeout(() => {
+            statusDiv.style.display = "none";
+            document.getElementById("localityStackedChart").style.display =
+              "block";
+            processAndRenderData(fallbackData);
+          }, 2000);
+        });
+
+      /* -------------------------------------------------------------------------
+           4. DATA PROCESSING & CHART RENDER
+        ------------------------------------------------------------------------- */
+      let localityChartInstance = null; // Store chart instance to destroy on re-render
+
+      function processAndRenderData(rawData) {
+        // Step 1: Map the data -> { Locality: { CompanyA: count, CompanyB: count, total: count } }
+        const localityMap = {};
+        const uniqueCompanies = new Set();
+
+        // Start loop from 1 to skip the header row
+        for (let i = 1; i < rawData.length; i++) {
+          let row = rawData[i];
+          let company = row[0] ? row[0].trim() : null; // Column A
+          let locality = row[5] ? row[5].trim() : null; // Column F
+
+          // Only process if both Company and Locality are present
+          if (company && locality && company !== "" && locality !== "") {
+            uniqueCompanies.add(company);
+
+            if (!localityMap[locality]) {
+              localityMap[locality] = { total: 0 };
+            }
+            if (!localityMap[locality][company]) {
+              localityMap[locality][company] = 0;
+            }
+
+            // Increment the project count
+            localityMap[locality][company]++;
+            localityMap[locality].total++;
+          }
+        }
+
+        // Step 2: Sort Localities by Total Projects (Descending)
+        // NOTE: I HAVE REMOVED THE .slice(0, 15) LIMIT! THIS WILL NOW SHOW ALL DATA!
+        const sortedLocalities = Object.keys(localityMap).sort(
+          (a, b) => localityMap[b].total - localityMap[a].total,
+        );
+
+        // Step 3: Prepare Datasets for Chart.js
+        const colorPalette = [
+          "rgba(143, 231, 231, 0.85)",
+          "rgba(44, 110, 110, 0.85)",
+          "rgba(0, 255, 120, 0.85)",
+          "rgba(255, 0, 255, 0.85)",
+          "rgba(0, 140, 255, 0.85)",
+          "rgba(255, 50, 50, 0.85)",
+          "rgba(255, 180, 0, 0.85)",
+          "rgba(50, 255, 50, 0.85)",
+          "rgba(255, 120, 0, 0.85)",
+          "rgba(180, 0, 255, 0.85)",
+          "rgba(255, 0, 90, 0.85)",
+          "rgba(50, 50, 255, 0.85)",
+        ];
+
+        const datasets = Array.from(uniqueCompanies).map((company, index) => {
+          return {
+            label: company,
+            // For each locality, get this company's count (or 0 if they don't build there)
+            data: sortedLocalities.map((loc) => localityMap[loc][company] || 0),
+            backgroundColor: colorPalette[index % colorPalette.length],
+            borderColor: colorPalette[index % colorPalette.length].replace(
+              "0.85)",
+              "1)",
+            ),
+            borderWidth: 1,
+            hoverBorderWidth: 2,
+            hoverBorderColor: "#ffffff",
+          };
+        });
+
+        /* ---------------------------------------------------------------------
+               CUSTOM PLUGIN: NEON GLOWING BARS
+            --------------------------------------------------------------------- */
+        const glowingBarPlugin = {
+          id: "glowingBar",
+          beforeDatasetDraw(chart, args, options) {
+            const { ctx } = chart;
+            const dataset = chart.data.datasets[args.index];
+            if (!dataset) return;
+            ctx.save();
+            ctx.shadowColor = dataset.borderColor || dataset.backgroundColor;
+            ctx.shadowBlur = 12; // Beautiful neon glow
+          },
+          afterDatasetDraw(chart, args, options) {
+            chart.ctx.restore();
+          },
+        };
+        Chart.register(glowingBarPlugin);
+
+        /* ---------------------------------------------------------------------
+               RENDER CHART.JS
+            --------------------------------------------------------------------- */
+        const ctx = document
+          .getElementById("localityStackedChart")
+          .getContext("2d");
+        Chart.defaults.color = "#e0e0e0";
+        Chart.defaults.font.family = "Poppins";
+
+        // Destroy previous chart instance if it exists (prevents ghosting on live reloads)
+        if (localityChartInstance) {
+          localityChartInstance.destroy();
+        }
+
+        localityChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: sortedLocalities, // X-Axis (Localities)
+            datasets: datasets, // Y-Axis Stack (Companies)
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "nearest", // Trigger tooltip exactly on the segment hovered over
+              intersect: true,
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#ffffff",
+                  font: { size: 12, family: "Poppins" },
+                  padding: 15,
+                  usePointStyle: true,
+                },
+              },
+              // CUSTOM GLOWING MULTI-DATA TOOLTIP
+              tooltip: {
+                backgroundColor: "rgba(14, 51, 51, 0.95)",
+                titleColor: "#8fe7e7",
+                bodyColor: "#ffffff",
+                borderColor: "#2c6e6e",
+                borderWidth: 1,
+                padding: 15,
+                titleFont: { size: 16, weight: "bold", family: "Poppins" },
+                bodyFont: { size: 14, family: "Poppins" },
+                callbacks: {
+                  // Title: Shows the Locality
+                  title: function (context) {
+                    return "Locality: " + context[0].label;
+                  },
+                  // Body: Shows Company Name and Project Count
+                  label: function (context) {
+                    return (
+                      context.dataset.label + " : " + context.raw + " Projects"
+                    );
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                stacked: true,
+                ticks: {
+                  color: "#ffffff",
+                  font: { size: 12, weight: "500" },
+                  maxRotation: 45,
+                  minRotation: 45,
+                },
+                grid: { display: false },
+                title: {
+                  display: true,
+                  text: "All Active Localities",
+                  color: "#8fe7e7",
+                  font: { size: 15, weight: "bold", letterSpacing: 1 },
+                },
+              },
+              y: {
+                stacked: true,
+                title: {
+                  display: true,
+                  text: "Number of Projects",
+                  color: "#8fe7e7",
+                  font: { size: 15, weight: "bold", letterSpacing: 1 },
+                },
+                ticks: { color: "#ffffff", stepSize: 2 },
+                grid: { color: "rgba(143, 231, 231, 0.08)" },
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Unfurnished Configuration Pricing</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      /* ---------------- CORE & THEME COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.95)),
+          url("image14.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .glow-particle {
+        position: absolute;
+        background: #8fe7e7;
+        border-radius: 50%;
+        box-shadow:
+          0 0 15px #8fe7e7,
+          0 0 30px #2c6e6e;
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.6;
+          box-shadow:
+            0 0 20px #8fe7e7,
+            0 0 40px #8fe7e7;
+        }
+        100% {
+          transform: translateY(-30px) scale(1.1);
+          opacity: 0.05;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      /* ---------------- MAIN CONTENT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1700px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 25px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* Interaction Instruction */
+      .interaction-hint {
+        text-align: center;
+        color: #00ff78;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+        letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(0, 255, 120, 0.4);
+      }
+
+      /* Loading Status */
+      #data-status {
+        text-align: center;
+        color: #8fe7e7;
+        font-size: 1.2rem;
+        font-weight: 500;
+        animation: pulse 1.5s infinite;
+        margin-bottom: 30px;
+      }
+
+      /* ---------------- CHART GLASS PANEL ---------------- */
+      .chart-glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 30px 40px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(14, 51, 51, 0.5);
+        margin-bottom: 40px;
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        position: relative;
+        display: none; /* Hidden until loaded */
+      }
+
+      .chart-glass-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        pointer-events: none;
+      }
+
+      .chart-wrapper {
+        height: 600px;
+        width: 100%;
+      }
+
+      /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        display: none; /* Hidden until loaded */
+      }
+
+      .insight-card {
+        background: rgba(14, 51, 51, 0.5);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(44, 110, 110, 0.5);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .insight-card:nth-child(1) {
+        animation-delay: 0.3s;
+      }
+      .insight-card:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+      .insight-card:nth-child(3) {
+        animation-delay: 0.7s;
+      }
+
+      .insight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #8fe7e7;
+        box-shadow:
+          0 15px 40px rgba(44, 110, 110, 0.8),
+          inset 0 0 15px rgba(143, 231, 231, 0.2);
+      }
+
+      .insight-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c6e6e, #8fe7e7, #ffffff);
+        transition: width 0.5s ease;
+      }
+      .insight-card:hover::after {
+        width: 100%;
+      }
+
+      .insight-icon {
+        font-size: 2.2rem;
+        color: #8fe7e7;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 0 8px rgba(143, 231, 231, 0.6));
+      }
+
+      .insight-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .insight-text {
+        font-size: 0.95rem;
+        color: #d4eeee;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      .highlight {
+        color: #ffffff;
+        font-weight: 600;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .insights-grid {
+          grid-template-columns: 1fr;
+        }
+        .chart-wrapper {
+          height: 500px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Glowing Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+      <a href="page12.html" class="btn-nav"
+        ><i class="fa-solid fa-arrow-left"></i> Back</a
+      >
+      <a href="page14.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Configuration Pricing Matrix (Unfurnished)</h1>
+        <h2>
+          Competitor Base Sale Price Per Sq.Ft. by Bedroom & Washroom Layouts
+        </h2>
+      </div>
+
+      <div class="interaction-hint">
+        <i class="fa-solid fa-hand-pointer"></i> Point to a bubble for full
+        project details. Click any bubble to open the project's website!
+      </div>
+
+      <div id="data-status">Fetching Live Configuration Data...</div>
+
+      <!-- Luminous Bubble Chart Area -->
+      <div class="chart-glass-panel" id="chart-container-div">
+        <div class="chart-wrapper">
+          <canvas id="configBubbleChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Executive Insights -->
+      <div class="insights-grid" id="insights-container">
+        <div class="insight-card">
+          <i class="fa-solid fa-chart-bar insight-icon"></i>
+          <div class="insight-title">Unfurnished Baseline Index</div>
+          <div class="insight-text">
+            Observe the market's absolute base entry points. These unfurnished
+            pricing tiers represent the true value of the
+            <span class="highlight"
+              >real estate location and bare-shell structure</span
+            >
+            without the padding of premium interior fit-outs.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-ruler-combined insight-icon"></i>
+          <div class="insight-title">Bare-Shell Floor Area Efficiency</div>
+          <div class="insight-text">
+            Hover over the clusters to evaluate the base
+            <span class="highlight">Floor Area distributions</span>. Efficiently
+            sized unfurnished units that maintain a high per sq.ft. price
+            represent massive raw profitability before any furnishing overhead
+            is factored in.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-chess-board insight-icon"></i>
+          <div class="insight-title">Strategic Blueprint</div>
+          <div class="insight-text">
+            Identify competitor gaps in the unfurnished market. If competitors
+            neglect "4BR, 4WR" base units,
+            <span class="highlight">Prime Group</span> can introduce high-end
+            customizable bare-shells, appealing to luxury buyers who prefer
+            designing their own bespoke interiors.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------------------------------------------------------------
+           1. PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+      const particleContainer = document.getElementById("particle-container");
+      for (let i = 0; i < 40; i++) {
+        let particle = document.createElement("div");
+        particle.className = "glow-particle";
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        let size = Math.random() * 5 + 3;
+        particle.style.width = size + "px";
+        particle.style.height = size + "px";
+        particle.style.animationDuration = Math.random() * 3 + 3 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      /* -------------------------------------------------------------------------
+           2. LIVE FETCH LOGIC
+        ------------------------------------------------------------------------- */
+      const publishedCsvUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSrP5dnxLY_KjAvUaHsmiwMuaBUP12EDnSzT9qIqTtv7C2uD6WXy4OfpZ3BwB-4eh0xGSNBfxGWH9dO/pub?output=csv";
+
+      Papa.parse(publishedCsvUrl, {
+        download: true,
+        header: false, // Extracting by exact column index
+        skipEmptyLines: true,
+        complete: function (results) {
+          document.getElementById("data-status").style.display = "none";
+          document.getElementById("chart-container-div").style.display =
+            "block";
+          document.getElementById("insights-container").style.display = "grid";
+          processAndRenderChart(results.data);
+        },
+        error: function (err) {
+          document.getElementById("data-status").innerText =
+            "Error connecting to live data. Please verify the URL.";
+          document.getElementById("data-status").style.color = "#ff6b6b";
+        },
+      });
+
+      /* -------------------------------------------------------------------------
+           3. DATA PROCESSING & CHART RENDER
+        ------------------------------------------------------------------------- */
+      function processAndRenderChart(rawData) {
+        // X-Axis Categories exactly as requested
+        const xCategories = [
+          "1BR, 1WR",
+          "2BR, 1WR",
+          "2BR, 2WR",
+          "3BR, 2WR",
+          "3BR, 3WR",
+          "4BR, 3WR",
+          "4BR, 4WR",
+          "More",
+        ];
+
+        // Matching Column Indices based on A=0, B=1, C=2, etc.
+        // Maps Price Columns and corresponding Floor Area Columns
+        const configMappings = [
+          { priceCol: 8, areaCol: 7 }, // 1BR, 1WR: Price I(8), Area H(7)
+          { priceCol: 10, areaCol: 9 }, // 2BR, 1WR: Price K(10), Area J(9)
+          { priceCol: 12, areaCol: 11 }, // 2BR, 2WR: Price M(12), Area L(11)
+          { priceCol: 14, areaCol: 13 }, // 3BR, 2WR: Price O(14), Area N(13)
+          { priceCol: 16, areaCol: 15 }, // 3BR, 3WR: Price Q(16), Area P(15)
+          { priceCol: 20, areaCol: 19 }, // 4BR, 3WR: Price U(20), Area T(19)
+          { priceCol: 22, areaCol: 21 }, // 4BR, 4WR: Price W(22), Area V(21)
+          { priceCol: 24, areaCol: 23 }, // More 4BR: Price Y(24), Area X(23)
+        ];
+
+        const companyDataMap = {};
+
+        // Loop through rows (skip header row)
+        for (let i = 1; i < rawData.length; i++) {
+          let row = rawData[i];
+
+          // Metadata Columns
+          let company = row[0] ? row[0].trim() : "Unknown"; // Col A
+          let project = row[2] ? row[2].trim() : "Unknown Project"; // Col C
+          let locality = row[3] ? row[3].trim() : "N/A"; // Col D
+          let status = row[4] ? row[4].trim() : "N/A"; // Col E
+          let condition = row[5] ? row[5].trim() : "N/A"; // Col F
+          let link = row[25] ? row[25].trim() : "#"; // Col Z
+
+          if (!companyDataMap[company]) {
+            companyDataMap[company] = [];
+          }
+
+          // Loop through the config mappings and plot a bubble for EVERY valid price found.
+          configMappings.forEach((mapping, catIndex) => {
+            let priceRaw = row[mapping.priceCol]
+              ? row[mapping.priceCol]
+                  .toString()
+                  .replace(/,/g, "")
+                  .replace(/Rs/gi, "")
+                  .trim()
+              : "0";
+            let price = parseFloat(priceRaw) || 0;
+
+            let areaStr = row[mapping.areaCol]
+              ? row[mapping.areaCol].toString().trim()
+              : "N/A";
+
+            if (price > 0) {
+              companyDataMap[company].push({
+                x: xCategories[catIndex], // X-Axis Category
+                y: price, // Y-Axis Price
+                r: 10, // Fixed comfortable bubble size for uniform layout clarity
+
+                // Store metadata for the glowing tooltip
+                meta: {
+                  company: company,
+                  project: project,
+                  locality: locality,
+                  status: status,
+                  condition: condition,
+                  floorArea: areaStr,
+                  link: link,
+                },
+              });
+            }
+          });
+        }
+
+        // Distinct Color Palette for Companies
+        const colorPalette = [
+          "rgba(143, 231, 231, 0.85)",
+          "rgba(0, 255, 120, 0.85)",
+          "rgba(255, 180, 0, 0.85)",
+          "rgba(255, 0, 150, 0.85)",
+          "rgba(0, 140, 255, 0.85)",
+          "rgba(255, 50, 50, 0.85)",
+          "rgba(180, 0, 255, 0.85)",
+          "rgba(50, 255, 50, 0.85)",
+          "rgba(255, 120, 0, 0.85)",
+          "rgba(255, 255, 255, 0.85)",
+          "rgba(200, 200, 200, 0.85)",
+        ];
+
+        const datasets = Object.keys(companyDataMap).map((company, index) => {
+          return {
+            label: company,
+            data: companyDataMap[company],
+            backgroundColor: colorPalette[index % colorPalette.length],
+            borderColor: colorPalette[index % colorPalette.length].replace(
+              "0.85)",
+              "1)",
+            ),
+            borderWidth: 2,
+            hoverBorderWidth: 4,
+            hoverBorderColor: "#ffffff",
+          };
+        });
+
+        /* Custom Plugin: Neon Glowing Bubbles */
+        const glowingBubblePlugin = {
+          id: "glowingBubble",
+          beforeDatasetsDraw(chart, args, options) {
+            const { ctx } = chart;
+            chart.data.datasets.forEach((dataset, index) => {
+              const meta = chart.getDatasetMeta(index);
+              meta.data.forEach((element) => {
+                ctx.save();
+                ctx.shadowColor = dataset.borderColor;
+                ctx.shadowBlur = 18; // Neon Glow
+                ctx.beginPath();
+                ctx.arc(
+                  element.x,
+                  element.y,
+                  element.options.radius,
+                  0,
+                  Math.PI * 2,
+                );
+                ctx.fillStyle = dataset.backgroundColor;
+                ctx.fill();
+                ctx.restore();
+              });
+            });
+          },
+        };
+        Chart.register(glowingBubblePlugin);
+
+        Chart.defaults.color = "#e0e0e0";
+        Chart.defaults.font.family = "Poppins";
+
+        const ctx = document
+          .getElementById("configBubbleChart")
+          .getContext("2d");
+
+        const chartConfig = new Chart(ctx, {
+          type: "bubble",
+          data: {
+            labels: xCategories, // Enforce Categorical X-Axis spacing
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            // Click Event to Open Project Link
+            onClick: (e, elements) => {
+              if (elements.length > 0) {
+                const datasetIndex = elements[0].datasetIndex;
+                const index = elements[0].index;
+                const link =
+                  chartConfig.data.datasets[datasetIndex].data[index].meta.link;
+
+                if (link && link !== "#" && link.trim() !== "") {
+                  window.open(link, "_blank");
+                }
+              }
+            },
+
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#ffffff",
+                  font: { size: 13, family: "Poppins", weight: "500" },
+                  padding: 15,
+                  usePointStyle: true,
+                },
+              },
+
+              // CUSTOM GLOWING MULTI-DATA TOOLTIP
+              tooltip: {
+                backgroundColor: "rgba(10, 35, 35, 0.98)",
+                titleColor: "#8fe7e7",
+                bodyColor: "#ffffff",
+                borderColor: "#2c6e6e",
+                borderWidth: 1,
+                padding: 18,
+                boxPadding: 6,
+                usePointStyle: true,
+                titleFont: { size: 18, weight: "bold", family: "Poppins" },
+                bodyFont: { size: 13, family: "Poppins", lineHeight: 1.6 },
+                callbacks: {
+                  // Title: Project Name
+                  title: function (context) {
+                    return context[0].raw.meta.project;
+                  },
+                  // Body: Complex formatting of all metadata
+                  label: function (context) {
+                    const meta = context.raw.meta;
+                    const priceString =
+                      "LKR " +
+                      context.raw.y.toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      });
+
+                    // Separated array strings render on new lines
+                    return [
+                      `🏢 Company: ${meta.company}`,
+                      `📍 Locality: ${meta.locality}`,
+                      `🛏️ Configuration: ${context.raw.x}`,
+                      `📐 Floor Area: ${meta.floorArea} sq.ft`,
+                      `💰 Base Sale Price: ${priceString} / sq.ft`,
+                      `🔑 Status: ${meta.status}`,
+                      `💎 Condition: ${meta.condition}`,
+                      ` `,
+                      `✨ CLICK BUBBLE TO EXPLORE WEBSITE ✨`,
+                    ];
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                type: "category", // Spaces bubbles out perfectly by the 8 categories
+                ticks: { color: "#ffffff", font: { size: 13, weight: "600" } },
+                grid: { color: "rgba(143, 231, 231, 0.05)" },
+                title: {
+                  display: true,
+                  text: "Bedroom & Washroom Configurations",
+                  color: "#8fe7e7",
+                  font: { size: 15, weight: "bold", letterSpacing: 1 },
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Base Sale Price Per Sq.Ft (LKR)",
+                  color: "#8fe7e7",
+                  font: { size: 15, weight: "bold", letterSpacing: 1 },
+                },
+                ticks: {
+                  color: "#ffffff",
+                  callback: function (value) {
+                    if (value >= 1000)
+                      return "LKR " + (value / 1000).toFixed(0) + "K";
+                    return "LKR " + value;
+                  },
+                },
+                grid: { color: "rgba(143, 231, 231, 0.08)" },
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

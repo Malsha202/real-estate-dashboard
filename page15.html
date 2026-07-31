@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Digital Footprint & Social Media Matrix</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      /* ---------------- CORE & THEME COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.95)),
+          url("image16.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- SOCIAL MEDIA FLOATING PARTICLES ---------------- */
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .social-particle {
+        position: absolute;
+        color: #8fe7e7;
+        filter: drop-shadow(0 0 10px #8fe7e7) drop-shadow(0 0 20px #2c6e6e);
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8) rotate(-10deg);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.4;
+          filter: drop-shadow(0 0 15px #8fe7e7) drop-shadow(0 0 30px #8fe7e7);
+        }
+        100% {
+          transform: translateY(-40px) scale(1.2) rotate(10deg);
+          opacity: 0.05;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      /* ---------------- MAIN CONTENT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1700px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 25px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* Interaction Instruction */
+      .interaction-hint {
+        text-align: center;
+        color: #00ff78;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+        letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(0, 255, 120, 0.4);
+      }
+
+      /* Loading Status */
+      #data-status {
+        text-align: center;
+        color: #8fe7e7;
+        font-size: 1.2rem;
+        font-weight: 500;
+        animation: pulse 1.5s infinite;
+        margin-bottom: 30px;
+      }
+
+      /* ---------------- CHART GLASS PANEL ---------------- */
+      .chart-glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 30px 40px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(14, 51, 51, 0.5);
+        margin-bottom: 40px;
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        position: relative;
+        display: none; /* Hidden until loaded */
+      }
+
+      .chart-glass-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        pointer-events: none;
+      }
+
+      .chart-wrapper {
+        height: 600px;
+        width: 100%;
+      }
+
+      /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        display: none; /* Hidden until loaded */
+      }
+
+      .insight-card {
+        background: rgba(14, 51, 51, 0.5);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(44, 110, 110, 0.5);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .insight-card:nth-child(1) {
+        animation-delay: 0.3s;
+      }
+      .insight-card:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+      .insight-card:nth-child(3) {
+        animation-delay: 0.7s;
+      }
+
+      .insight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #8fe7e7;
+        box-shadow:
+          0 15px 40px rgba(44, 110, 110, 0.8),
+          inset 0 0 15px rgba(143, 231, 231, 0.2);
+      }
+
+      .insight-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c6e6e, #8fe7e7, #ffffff);
+        transition: width 0.5s ease;
+      }
+      .insight-card:hover::after {
+        width: 100%;
+      }
+
+      .insight-icon {
+        font-size: 2.2rem;
+        color: #8fe7e7;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 0 8px rgba(143, 231, 231, 0.6));
+      }
+
+      .insight-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .insight-text {
+        font-size: 0.95rem;
+        color: #d4eeee;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      .highlight {
+        color: #ffffff;
+        font-weight: 600;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .insights-grid {
+          grid-template-columns: 1fr;
+        }
+        .chart-wrapper {
+          height: 500px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Social Media Animated Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+      <a href="page14.html" class="btn-nav"
+        ><i class="fa-solid fa-arrow-left"></i> Back</a
+      >
+      <a href="page16.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Digital Footprint & Social Dominance Matrix</h1>
+        <h2>
+          Comprehensive Competitor Social Media Presence & Engagement Comparison
+        </h2>
+      </div>
+
+      <div class="interaction-hint">
+        <i class="fa-solid fa-hand-pointer"></i> Hover over the chart clusters
+        to analyze detailed engagement metrics per competitor.
+      </div>
+
+      <div id="data-status">Fetching Live Social Media Metrics...</div>
+
+      <!-- Luminous Chart Area -->
+      <div class="chart-glass-panel" id="chart-container-div">
+        <div class="chart-wrapper">
+          <canvas id="socialMediaChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Executive Insights -->
+      <div class="insights-grid" id="insights-container">
+        <div class="insight-card">
+          <i class="fa-solid fa-hashtag insight-icon"></i>
+          <div class="insight-title">Brand Reach Leadership</div>
+          <div class="insight-text">
+            Observe the clusters across the leading companies. Competitors
+            dominating high metrics in Facebook and Instagram possess the
+            highest
+            <span class="highlight"
+              >Direct-to-Consumer (D2C) brand awareness</span
+            >, reducing overall marketing acquisition cost per lead.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-brands fa-linkedin-in insight-icon"></i>
+          <div class="insight-title">B2B & Investor Confidence</div>
+          <div class="insight-text">
+            High engagement metrics on platforms like LinkedIn or YouTube
+            indicate strong
+            <span class="highlight"
+              >B2B positioning and Investor Confidence</span
+            >. This portrays a brand focused on corporate transparency and
+            large-scale project documentation.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-tower-broadcast insight-icon"></i>
+          <div class="insight-title">Strategic Digital Action</div>
+          <div class="insight-text">
+            Identify specific metrics where competitors are lagging (low bars).
+            <span class="highlight">Prime Group</span> can aggressively deploy
+            marketing capital into these specific digital vacuums, capturing
+            undisputed audience attention with high-quality visual content.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------------------------------------------------------------
+           1. SOCIAL MEDIA PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+      const particleContainer = document.getElementById("particle-container");
+      // Array of FontAwesome social media icon classes
+      const socialIcons = [
+        "fa-facebook",
+        "fa-instagram",
+        "fa-linkedin",
+        "fa-youtube",
+        "fa-x-twitter",
+        "fa-tiktok",
+        "fa-whatsapp",
+      ];
+
+      for (let i = 0; i < 40; i++) {
+        let particle = document.createElement("i");
+        // Randomly select a social media icon
+        const randomIcon =
+          socialIcons[Math.floor(Math.random() * socialIcons.length)];
+        particle.className = `fa-brands ${randomIcon} social-particle`;
+
+        // Random positioning and sizing
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        let size = Math.random() * 20 + 15; // Font size between 15px and 35px
+        particle.style.fontSize = size + "px";
+
+        // Rhythmic Animation Timings
+        particle.style.animationDuration = Math.random() * 4 + 3 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      /* -------------------------------------------------------------------------
+           2. LIVE FETCH LOGIC
+        ------------------------------------------------------------------------- */
+      const publishedCsvUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQigt-qCJiRK9qeCUojZRNpI6qiaLte5fzzRzza3-gJ5lWXPw9N55h2_4gCACQGzeRuhYGpIstrgHoh/pub?output=csv";
+
+      Papa.parse(publishedCsvUrl, {
+        download: true,
+        header: false, // Reading dynamically row by row
+        skipEmptyLines: true,
+        complete: function (results) {
+          document.getElementById("data-status").style.display = "none";
+          document.getElementById("chart-container-div").style.display =
+            "block";
+          document.getElementById("insights-container").style.display = "grid";
+          processAndRenderChart(results.data);
+        },
+        error: function (err) {
+          document.getElementById("data-status").innerText =
+            "Error connecting to live data. Please verify the URL.";
+          document.getElementById("data-status").style.color = "#ff6b6b";
+        },
+      });
+
+      /* -------------------------------------------------------------------------
+           3. DATA PROCESSING & CHART RENDER
+        ------------------------------------------------------------------------- */
+      function processAndRenderChart(rawData) {
+        // Ensure data exists
+        if (rawData.length < 2) return;
+
+        // Row 0 is the Header Row.
+        // Col 0 is "Company Name", the rest are the Social Media Platforms/Metrics.
+        const headers = rawData[0];
+        const platformMetrics = []; // These will be our Datasets (the individual bars in a cluster)
+
+        // Extract the platform names from the header (Skipping the first column)
+        for (let j = 1; j < headers.length; j++) {
+          if (headers[j] && headers[j].trim() !== "") {
+            platformMetrics.push(headers[j].trim());
+          }
+        }
+
+        const companies = []; // These will be our X-Axis labels
+        // Create an array of arrays to hold the data for each metric across all companies
+        const metricData = Array.from(
+          { length: platformMetrics.length },
+          () => [],
+        );
+
+        // Loop through the rows to extract company data
+        for (let i = 1; i < rawData.length; i++) {
+          let row = rawData[i];
+          let company = row[0] ? row[0].trim() : "";
+
+          if (company !== "") {
+            companies.push(company);
+
+            // Loop through each column to get the metric data
+            for (let j = 1; j <= platformMetrics.length; j++) {
+              // Clean the string: remove commas, text, currency symbols if any, and parse as Float
+              let rawValueStr = row[j]
+                ? row[j]
+                    .toString()
+                    .replace(/,/g, "")
+                    .replace(/[^\d.-]/g, "")
+                    .trim()
+                : "0";
+              let val = parseFloat(rawValueStr) || 0;
+              metricData[j - 1].push(val); // Push value to the specific metric's array
+            }
+          }
+        }
+
+        // Distinct Color Palette for Metrics (Datasets) to ensure clear visualization within clusters
+        const colorPalette = [
+          "rgba(143, 231, 231, 0.85)",
+          "rgba(0, 255, 120, 0.85)",
+          "rgba(255, 180, 0, 0.85)",
+          "rgba(255, 0, 150, 0.85)",
+          "rgba(0, 140, 255, 0.85)",
+          "rgba(255, 50, 50, 0.85)",
+          "rgba(180, 0, 255, 0.85)",
+          "rgba(50, 255, 50, 0.85)",
+          "rgba(255, 120, 0, 0.85)",
+          "rgba(255, 255, 255, 0.85)",
+          "rgba(200, 200, 200, 0.85)",
+          "rgba(100, 200, 255, 0.85)",
+        ];
+
+        // Build the Datasets for Chart.js
+        const datasets = platformMetrics.map((metricName, index) => {
+          return {
+            label: metricName, // The Metric Name
+            data: metricData[index], // The array of metrics across all companies
+            backgroundColor: colorPalette[index % colorPalette.length],
+            borderColor: colorPalette[index % colorPalette.length].replace(
+              "0.85)",
+              "1)",
+            ),
+            borderWidth: 1,
+            borderRadius: 4, // Smooth rounded tops for the bars
+            hoverBorderWidth: 2,
+            hoverBorderColor: "#ffffff",
+          };
+        });
+
+        /* Custom Plugin: Neon Glowing Bars */
+        const glowingBarPlugin = {
+          id: "glowingBar",
+          beforeDatasetDraw(chart, args, options) {
+            const { ctx } = chart;
+            const dataset = chart.data.datasets[args.index];
+            if (!dataset) return;
+            ctx.save();
+            ctx.shadowColor = dataset.borderColor || dataset.backgroundColor;
+            ctx.shadowBlur = 10; // Glowing bar effect
+          },
+          afterDatasetDraw(chart, args, options) {
+            chart.ctx.restore();
+          },
+        };
+        Chart.register(glowingBarPlugin);
+
+        Chart.defaults.color = "#e0e0e0";
+        Chart.defaults.font.family = "Poppins";
+
+        const ctx = document
+          .getElementById("socialMediaChart")
+          .getContext("2d");
+
+        new Chart(ctx, {
+          type: "bar", // Using a clustered bar chart for optimal comparison
+          data: {
+            labels: companies, // X-Axis: Companies
+            datasets: datasets, // Clustered Bars: Metrics
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "index", // Hovering shows all metrics for that specific company cluster
+              intersect: false,
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#ffffff",
+                  font: { size: 13, family: "Poppins", weight: "500" },
+                  padding: 15,
+                  usePointStyle: true,
+                },
+              },
+              // CUSTOM GLOWING MULTI-DATA TOOLTIP
+              tooltip: {
+                backgroundColor: "rgba(10, 35, 35, 0.95)",
+                titleColor: "#8fe7e7",
+                bodyColor: "#ffffff",
+                borderColor: "#2c6e6e",
+                borderWidth: 1,
+                padding: 18,
+                boxPadding: 6,
+                usePointStyle: true,
+                titleFont: { size: 18, weight: "bold", family: "Poppins" },
+                bodyFont: { size: 13, family: "Poppins", lineHeight: 1.6 },
+                callbacks: {
+                  // Title: Company Name
+                  title: function (context) {
+                    return "Competitor: " + context[0].label;
+                  },
+                  // Body: Metric Name and Value
+                  label: function (context) {
+                    const metricName = context.dataset.label;
+                    const value = context.raw;
+
+                    // Format large numbers elegantly (e.g. 150,000)
+                    const formattedValue = value.toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    });
+
+                    return `${metricName} : ${formattedValue}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: "#ffffff",
+                  font: { size: 12, weight: "600" },
+                  maxRotation: 45,
+                  minRotation: 45,
+                },
+                grid: { color: "rgba(143, 231, 231, 0.05)" },
+                title: {
+                  display: true,
+                  text: "Competitor / Company Name",
+                  color: "#8fe7e7",
+                  font: { size: 15, weight: "bold", letterSpacing: 1 },
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Engagement / Follower Count",
+                  color: "#8fe7e7",
+                  font: { size: 15, weight: "bold", letterSpacing: 1 },
+                },
+                ticks: {
+                  color: "#ffffff",
+                  callback: function (value) {
+                    // Simplify massive numbers on the Y-Axis
+                    if (value >= 1000000)
+                      return (value / 1000000).toFixed(1) + "M";
+                    if (value >= 1000) return (value / 1000).toFixed(0) + "K";
+                    return value;
+                  },
+                },
+                grid: { color: "rgba(143, 231, 231, 0.08)" },
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

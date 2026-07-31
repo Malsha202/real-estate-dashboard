@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Methodology & Analytical Framework</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <style>
+      /* ---------------- CORE & THEME COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.96)),
+          url("image00.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- FLOATING GLOWING PARTICLES ---------------- */
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .glow-particle {
+        position: absolute;
+        background: #8fe7e7;
+        border-radius: 50%;
+        box-shadow:
+          0 0 15px #8fe7e7,
+          0 0 30px #2c6e6e;
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.5;
+          box-shadow:
+            0 0 20px #8fe7e7,
+            0 0 40px #8fe7e7;
+        }
+        100% {
+          transform: translateY(-30px) scale(1.1);
+          opacity: 0.05;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: flex-end; /* Only Next button for the first page */
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      /* ---------------- MAIN CONTENT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        color: #8fe7e7;
+      }
+      .header-box h2 {
+        font-size: 1.2rem;
+        color: #d4eeee;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+      }
+
+      /* Full Width Row */
+      .full-width {
+        grid-column: 1 / -1;
+      }
+
+      .glass-box {
+        background: rgba(14, 51, 51, 0.65);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 35px;
+        transition: all 0.4s ease;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .glass-box:hover {
+        transform: translateY(-5px);
+      }
+
+      .box-header {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Specific Color Variations */
+      .glass-blue {
+        border-left: 6px solid #bae1ff;
+      }
+      .glass-blue:hover {
+        box-shadow: 0 15px 40px rgba(186, 225, 255, 0.2);
+        border-color: rgba(186, 225, 255, 0.4);
+      }
+      .glass-blue .box-header {
+        color: #bae1ff;
+        border-bottom-color: rgba(186, 225, 255, 0.3);
+      }
+
+      .glass-purple {
+        border-left: 6px solid #e2cbff;
+      }
+      .glass-purple:hover {
+        box-shadow: 0 15px 40px rgba(226, 203, 255, 0.2);
+        border-color: rgba(226, 203, 255, 0.4);
+      }
+      .glass-purple .box-header {
+        color: #e2cbff;
+        border-bottom-color: rgba(226, 203, 255, 0.3);
+      }
+
+      .glass-pink {
+        border-left: 6px solid #ffb3ba;
+      }
+      .glass-pink:hover {
+        box-shadow: 0 15px 40px rgba(255, 179, 186, 0.2);
+        border-color: rgba(255, 179, 186, 0.4);
+      }
+      .glass-pink .box-header {
+        color: #ffb3ba;
+        border-bottom-color: rgba(255, 179, 186, 0.3);
+      }
+
+      .glass-teal {
+        border-left: 6px solid #8fe7e7;
+      }
+      .glass-teal:hover {
+        box-shadow: 0 15px 40px rgba(143, 231, 231, 0.2);
+        border-color: rgba(143, 231, 231, 0.4);
+      }
+      .glass-teal .box-header {
+        color: #8fe7e7;
+        border-bottom-color: rgba(143, 231, 231, 0.3);
+      }
+
+      /* KPI Cards */
+      .kpi-container {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+      }
+      .kpi-card {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(143, 231, 231, 0.3);
+        border-radius: 16px;
+        padding: 25px 40px;
+        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 20px rgba(143, 231, 231, 0.05);
+        transition: all 0.3s ease;
+      }
+      .kpi-card:hover {
+        transform: scale(1.02);
+        border-color: #8fe7e7;
+        box-shadow:
+          inset 0 0 30px rgba(143, 231, 231, 0.15),
+          0 10px 20px rgba(0, 0, 0, 0.5);
+      }
+      .kpi-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #8fe7e7;
+        line-height: 1;
+        margin-bottom: 10px;
+        text-shadow: 0 0 15px rgba(143, 231, 231, 0.5);
+      }
+      .kpi-label {
+        font-size: 1.1rem;
+        color: #d4eeee;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 500;
+      }
+
+      /* Lists and Grids inside panels */
+      .content-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      .content-group h4 {
+        font-size: 1.1rem;
+        color: #ffffff;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .content-group ul {
+        list-style: none;
+        padding-left: 10px;
+      }
+      .content-group li {
+        font-size: 0.95rem;
+        color: #d4eeee;
+        margin-bottom: 8px;
+        position: relative;
+        padding-left: 15px;
+      }
+      .content-group li::before {
+        content: "-";
+        position: absolute;
+        left: 0;
+        color: inherit;
+        opacity: 0.5;
+      }
+
+      /* Scope Icons */
+      .scope-list li {
+        padding-left: 25px;
+        margin-bottom: 12px;
+        font-size: 1rem;
+        color: #e0e0e0;
+        position: relative;
+      }
+      .scope-list.included li::before {
+        content: "\f058";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        left: 0;
+        color: #baffc9;
+      }
+      .scope-list.excluded li::before {
+        content: "\f057";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        left: 0;
+        color: #ffb3ba;
+      }
+
+      /* Assumptions List */
+      .assumption-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .assumption-item {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px 20px;
+        border-radius: 12px;
+        border-left: 3px solid #ffb3ba;
+        font-size: 0.95rem;
+        color: #e0e0e0;
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .assumption-item span {
+        font-weight: 700;
+        color: #ffb3ba;
+        white-space: nowrap;
+      }
+
+      /* Limitations List */
+      .limitation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .limitation-item {
+        font-size: 1rem;
+        color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 179, 186, 0.05);
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px dashed rgba(255, 179, 186, 0.3);
+      }
+      .limitation-item i {
+        color: #ffb3ba;
+        font-size: 1.2rem;
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+        .kpi-container {
+          flex-direction: column;
+        }
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="particle-container"></div>
+
+    <div class="nav-container">
+      <!-- Connecting to Page 1 -->
+      <a href="page 1.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Analysis Scope & Methodology</h1>
+        <h2>
+          Comprehensive Data Sourcing, Assumptions, and Analytical Framework
+        </h2>
+      </div>
+
+      <div class="dashboard-grid">
+        <div
+          class="glass-box glass-teal full-width"
+          style="animation-delay: 0.1s"
+        >
+          <div class="box-header">
+            <i class="fa-solid fa-database"></i> Dataset Summary
+          </div>
+          <div class="kpi-container">
+            <div class="kpi-card">
+              <i
+                class="fa-solid fa-building text-[#8fe7e7] text-3xl mb-3 opacity-80"
+              ></i>
+              <div class="kpi-value counter" data-target="12">0</div>
+              <div class="kpi-label">Companies Analyzed</div>
+            </div>
+            <div class="kpi-card">
+              <i
+                class="fa-solid fa-city text-[#8fe7e7] text-3xl mb-3 opacity-80"
+              ></i>
+              <div class="kpi-value counter" data-target="300">0</div>
+              <div class="kpi-label">Apartment Projects Studied</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-box glass-blue" style="animation-delay: 0.2s">
+          <div class="box-header">
+            <i class="fa-solid fa-globe"></i> Data Sources
+          </div>
+          <div class="content-grid">
+            <div class="content-group">
+              <h4 style="color: #bae1ff">
+                <i class="fa-solid fa-laptop"></i> Official Websites
+              </h4>
+              <ul>
+                <li>Project details & status</li>
+                <li>Unit configurations</li>
+                <li>Amenities & Specifications</li>
+                <li>Project Imagery</li>
+              </ul>
+            </div>
+            <div class="content-group">
+              <h4 style="color: #bae1ff">
+                <i class="fa-solid fa-hashtag"></i> Social Media
+              </h4>
+              <ul>
+                <li>Facebook advertisements</li>
+                <li>Promotional campaigns</li>
+                <li>Project launch announcements</li>
+              </ul>
+            </div>
+            <div class="content-group">
+              <h4 style="color: #bae1ff">
+                <i class="fa-solid fa-list-ul"></i> Property Listings
+              </h4>
+              <ul>
+                <li>Apartment sale listings</li>
+                <li>Unit pricing information</li>
+                <li>Price per square foot data</li>
+              </ul>
+            </div>
+            <div class="content-group">
+              <h4 style="color: #bae1ff">
+                <i class="fa-solid fa-book-open"></i> Industry Pubs
+              </h4>
+              <ul>
+                <li>Real estate magazines</li>
+                <li>Property news articles</li>
+                <li>Market trend reports</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-box glass-purple" style="animation-delay: 0.3s">
+          <div class="box-header">
+            <i class="fa-solid fa-microscope"></i> Study Scope
+          </div>
+          <div class="content-grid">
+            <div>
+              <h4
+                style="
+                  color: #e2cbff;
+                  margin-bottom: 15px;
+                  border-bottom: 1px dashed rgba(226, 203, 255, 0.3);
+                  padding-bottom: 5px;
+                "
+              >
+                Included Elements
+              </h4>
+              <ul class="scope-list included">
+                <li>Completed Apartment Projects</li>
+                <li>Ongoing Apartment Projects</li>
+                <li>Upcoming Apartment Projects</li>
+                <li>Publicly Available Information</li>
+              </ul>
+            </div>
+            <div>
+              <h4
+                style="
+                  color: #ffb3ba;
+                  margin-bottom: 15px;
+                  border-bottom: 1px dashed rgba(255, 179, 186, 0.3);
+                  padding-bottom: 5px;
+                "
+              >
+                Excluded Elements
+              </h4>
+              <ul class="scope-list excluded">
+                <li>Non-public project information</li>
+                <li>Confidential company data</li>
+                <li>Undisclosed future developments</li>
+                <li>Internal financial records</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-box glass-pink" style="animation-delay: 0.4s">
+          <div class="box-header">
+            <i class="fa-solid fa-clipboard-check"></i> Key Assumptions
+          </div>
+          <div class="assumption-list">
+            <div class="assumption-item">
+              <span>Assumption 01:</span> Only projects officially published on
+              developer websites were considered for the core dataset.
+            </div>
+            <div class="assumption-item">
+              <span>Assumption 02:</span> Publicly advertised apartment prices
+              represent the actual market pricing conditions at the time of data
+              collection.
+            </div>
+            <div class="assumption-item">
+              <span>Assumption 03:</span> Project information available on
+              official websites was assumed to be accurate and up-to-date.
+            </div>
+            <div class="assumption-item">
+              <span>Assumption 04:</span> The collected project portfolio
+              provides a highly representative overview of each developer's
+              market presence.
+            </div>
+            <div class="assumption-item">
+              <span>Assumption 05:</span> Final transaction prices may slightly
+              differ from initially advertised public prices.
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-box glass-pink" style="animation-delay: 0.5s">
+          <div class="box-header">
+            <i class="fa-solid fa-triangle-exclamation"></i> Limitations
+          </div>
+          <div class="limitation-list">
+            <div class="limitation-item">
+              <i class="fa-solid fa-circle-exclamation"></i> Analysis is based
+              solely on publicly available information.
+            </div>
+            <div class="limitation-item">
+              <i class="fa-solid fa-circle-exclamation"></i> Market conditions
+              and inventory may change after the data collection period.
+            </div>
+            <div class="limitation-item">
+              <i class="fa-solid fa-circle-exclamation"></i> Advertised market
+              prices may vary from actual final sales transactions.
+            </div>
+            <div class="limitation-item">
+              <i class="fa-solid fa-circle-exclamation"></i> Unannounced or
+              future project developments are not reflected in current matrices.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------------------------------------------------------------
+           PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+      const particleContainer = document.getElementById("particle-container");
+      for (let i = 0; i < 40; i++) {
+        let particle = document.createElement("div");
+        particle.className = "glow-particle";
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        let size = Math.random() * 5 + 3;
+        particle.style.width = size + "px";
+        particle.style.height = size + "px";
+        particle.style.animationDuration = Math.random() * 4 + 3 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      /* -------------------------------------------------------------------------
+           NUMBER COUNTER ANIMATION FOR KPIs
+        ------------------------------------------------------------------------- */
+      document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".counter");
+
+        counters.forEach((counter) => {
+          const target = +counter.getAttribute("data-target");
+          const duration = 1500; // 1.5 seconds
+          const increment = target / (duration / 16); // 60fps
+
+          let current = 0;
+
+          const updateCounter = () => {
+            current += increment;
+            if (current < target) {
+              counter.innerText = Math.ceil(current);
+              requestAnimationFrame(updateCounter);
+            } else {
+              // Append '+' to the 350+ stat
+              counter.innerText = target + (target > 100 ? "+" : "");
+            }
+          };
+
+          // Slight delay to sync with CSS fade-in
+          setTimeout(() => {
+            updateCounter();
+          }, 800);
+        });
+      });
+    </script>
+  </body>
+</html>

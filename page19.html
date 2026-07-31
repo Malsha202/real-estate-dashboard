@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Group - Negombo Market Comparison</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ---------------- CORE & THEME COLORS ---------------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+        
+        body { 
+            background: linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.95)), url('image21.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0e3333; }
+        ::-webkit-scrollbar-thumb { background: #2c6e6e; border-radius: 4px; }
+
+        /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+        #particle-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .glow-particle {
+            position: absolute;
+            background: #8fe7e7;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #8fe7e7, 0 0 30px #2c6e6e;
+            animation: rhythmicFloat infinite ease-in-out alternate;
+        }
+
+        @keyframes rhythmicFloat {
+            0% { transform: translateY(0) scale(0.8); opacity: 0.1; }
+            50% { opacity: 0.6; box-shadow: 0 0 20px #8fe7e7, 0 0 40px #8fe7e7; }
+            100% { transform: translateY(-30px) scale(1.1); opacity: 0.05; }
+        }
+
+        /* ---------------- NAVIGATION ---------------- */
+        .nav-container {
+            position: relative; z-index: 100;
+            padding: 30px 4% 10px;
+            display: flex; justify-content: space-between;
+        }
+        .btn-nav {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 35px; font-size: 0.95rem; font-weight: 600; 
+            color: #ffffff; background-color: #2c6e6e; border: 2px solid #2d6b6b;
+            border-radius: 50px; text-decoration: none; transition: all 0.3s ease; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-nav:hover { 
+            background-color: #0e3333; border-color: #8fe7e7; 
+            transform: translateY(-4px); box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3); 
+        }
+
+        /* ---------------- MAIN CONTENT ---------------- */
+        .main-content {
+            position: relative; z-index: 10;
+            padding: 10px 4% 50px; max-width: 1700px; margin: 0 auto;
+        }
+
+        .header-box { text-align: center; margin-bottom: 25px; animation: fadeInDown 1s ease-out; }
+        .header-box h1 { font-size: 2.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .header-box h2 { font-size: 1.1rem; color: #8fe7e7; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* Interaction Instruction */
+        .interaction-hint {
+            text-align: center; color: #00ff78; font-size: 0.95rem; font-weight: 500; 
+            margin-bottom: 20px; animation: pulse 2s infinite; letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 255, 120, 0.4);
+        }
+
+        /* Loading Status */
+        #data-status {
+            text-align: center; color: #8fe7e7; font-size: 1.2rem; font-weight: 500; 
+            animation: pulse 1.5s infinite; margin-bottom: 30px;
+        }
+
+        /* ---------------- CHART GLASS PANEL ---------------- */
+        .chart-glass-panel {
+            background: rgba(26, 80, 80, 0.35); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(143, 231, 231, 0.2); 
+            border-radius: 24px;
+            padding: 30px 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(14, 51, 51, 0.5);
+            margin-bottom: 50px;
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            position: relative;
+            display: none; /* Hidden until loaded */
+        }
+        
+        .chart-glass-panel::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); pointer-events: none;
+        }
+
+        .chart-wrapper {
+            height: 550px; 
+            width: 100%;
+        }
+
+        /* ---------------- 5 TARGET PROJECTS GRID ---------------- */
+        .section-title {
+            font-size: 1.8rem; font-weight: 700; color: #ffffff; text-align: center;
+            margin-bottom: 30px; letter-spacing: 1px; text-transform: uppercase;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5); display: none;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            display: none; /* Hidden until loaded */
+            justify-content: center;
+        }
+
+        /* LARGE COMPARISON CARD */
+        .insight-card {
+            background: rgba(14, 51, 51, 0.65);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 35px;
+            transition: all 0.4s ease;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .insight-card:hover {
+            transform: translateY(-8px);
+            background: rgba(26, 80, 80, 0.85);
+        }
+
+        .insight-title {
+            font-size: 1.5rem; font-weight: 700; color: #ffffff;
+            margin-bottom: 8px; line-height: 1.3; text-transform: uppercase;
+        }
+
+        .insight-company {
+            font-size: 1rem; font-weight: 600; text-transform: uppercase;
+            margin-bottom: 25px; padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); letter-spacing: 1px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-item {
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .detail-item i {
+            color: #8fe7e7; font-size: 1.1rem; width: 20px; text-align: center; margin-top: 3px;
+        }
+        .detail-item div {
+            font-size: 0.9rem; color: #d4eeee; line-height: 1.4;
+        }
+        .detail-item div strong {
+            display: block; color: #ffffff; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 2px;
+        }
+
+        .insight-specs {
+            margin-top: 5px; font-size: 0.85rem; color: #a8d5d5;
+            background: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px;
+            line-height: 1.6; border-left: 3px solid #8fe7e7;
+        }
+
+        .btn-explore {
+            margin-top: auto; 
+            padding: 12px 0; width: 100%; text-align: center;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; border-radius: 8px; text-decoration: none; font-size: 0.95rem;
+            font-weight: 600; transition: 0.3s; margin-top: 25px; display: inline-block;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-explore:hover { background: rgba(255,255,255,0.25); transform: scale(1.02); }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        /* Responsive */
+        @media (max-width: 900px) { .details-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <!-- Glowing Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+        <a href="page18.html" class="btn-nav"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <a href="page20.html" class="btn-nav">Next <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="header-box">
+            <h1>Negombo Projects Comparison</h1>
+            <h2>Targeted Analysis of 5 Major Ongoing Projects in the Region</h2>
+        </div>
+        
+        <div class="interaction-hint">
+            <i class="fa-solid fa-hand-pointer"></i> Point to a bubble for macro-market details. Scroll down for deep-dive panel analyses!
+        </div>
+
+        <div id="data-status">Fetching Live Data from Database...</div>
+
+        <!-- Luminous Bubble Chart Area -->
+        <div class="chart-glass-panel" id="chart-container-div">
+            <div class="chart-wrapper">
+                <canvas id="projectBubbleChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section-title" id="section-title">In-Depth Project Comparison: Negombo</div>
+
+        <!-- The 5 Target Insight Panels -->
+        <div class="insights-grid" id="insights-container">
+            <!-- Dynamically injected via JavaScript -->
+        </div>
+
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------------------
+           1. PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+        const particleContainer = document.getElementById('particle-container');
+        for(let i = 0; i < 40; i++) {
+            let particle = document.createElement('div');
+            particle.className = 'glow-particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            let size = Math.random() * 5 + 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            particle.style.animationDelay = (Math.random() * 5) + 's';
+            particleContainer.appendChild(particle);
+        }
+
+        /* -------------------------------------------------------------------------
+           2. LIVE FETCH LOGIC
+        ------------------------------------------------------------------------- */
+        const publishedCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzBmHcRYbWwcEMDaQOX2WCYzDonXnspOfyj3WVWfE_d9dxGvePL_DgP-trm0z0mP8a4lmz-MXWV3HS/pub?output=csv";
+
+        Papa.parse(publishedCsvUrl, {
+            download: true,
+            header: false, 
+            skipEmptyLines: true,
+            complete: function(results) {
+                document.getElementById('data-status').style.display = 'none';
+                document.getElementById('chart-container-div').style.display = 'block';
+                document.getElementById('section-title').style.display = 'block';
+                document.getElementById('insights-container').style.display = 'grid';
+                processAndRenderChart(results.data);
+            },
+            error: function(err) {
+                document.getElementById('data-status').innerText = "Error connecting to live data. Please verify the URL.";
+                document.getElementById('data-status').style.color = "#ff6b6b";
+            }
+        });
+
+        /* -------------------------------------------------------------------------
+           3. DATA PROCESSING & CHART RENDER
+        ------------------------------------------------------------------------- */
+        function processAndRenderChart(rawData) {
+            
+            const companyDataMap = {};
+            const uniqueLocalities = new Set();
+            const extractedTargetProjects = []; 
+
+            // The 5 Specific Projects Requested for the bottom panels
+            const targetProjectNames = [
+                "venezia", 
+                "j'adore", 
+                "bayfonte marina resort apartments", 
+                "santorini resort apartments and residencies by home lands skyline", 
+                "ocean breeze residencies"
+            ];
+
+            // Distinct Color Palette for Companies
+            const colorPalette = [
+                "rgba(143, 231, 231, 0.85)", "rgba(0, 255, 120, 0.85)", "rgba(255, 180, 0, 0.85)",
+                "rgba(255, 0, 150, 0.85)", "rgba(0, 140, 255, 0.85)", "rgba(255, 50, 50, 0.85)",
+                "rgba(180, 0, 255, 0.85)", "rgba(50, 255, 50, 0.85)", "rgba(255, 120, 0, 0.85)",
+                "rgba(255, 255, 255, 0.85)"
+            ];
+
+            const companyColorMap = {}; 
+            let colorIndex = 0;
+
+            // Extract logic starting from row 1 to skip headers
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                
+                // Extracting based on 0-index columns
+                let company   = row[0] ? row[0].trim() : "Unknown"; // A
+                let project   = row[2] ? row[2].trim() : "Unknown Project"; // C
+                let locality  = row[5] ? row[5].trim() : null; // F
+                let year      = row[6] ? row[6].trim() : "N/A"; // G
+                let status    = row[7] ? row[7].trim() : "N/A"; // H
+                let units     = row[9] ? row[9].trim() : "0"; // J
+                let condition = row[10] ? row[10].trim() : "N/A"; // K
+                let beds      = row[11] ? row[11].trim() : "N/A"; // L
+                let baths     = row[12] ? row[12].trim() : "N/A"; // M
+                let priceRaw  = row[13] ? row[13].toString().replace(/,/g, '').replace(/Rs/gi, '').trim() : "0"; // N
+                let priceStr  = row[13] ? row[13].trim() : "N/A";
+                let specs     = row[14] ? row[14].trim() : "N/A"; // O
+                let link      = row[15] ? row[15].trim() : "#"; // P
+
+                let startingPrice = parseFloat(priceRaw) || 0; // Y-Axis value
+
+                if (locality && startingPrice > 0) {
+                    uniqueLocalities.add(locality);
+
+                    // Assign a consistent color to the company
+                    if (!companyColorMap[company]) {
+                        companyColorMap[company] = colorPalette[colorIndex % colorPalette.length];
+                        colorIndex++;
+                    }
+
+                    if (!companyDataMap[company]) {
+                        companyDataMap[company] = [];
+                    }
+
+                    const projectDataObj = {
+                        company: company,
+                        project: project,
+                        locality: locality,
+                        year: year,
+                        status: status,
+                        units: units,
+                        condition: condition,
+                        beds: beds,
+                        baths: baths,
+                        priceStr: priceStr,
+                        specs: specs,
+                        link: link,
+                        color: companyColorMap[company]
+                    };
+
+                    // Push for Chart
+                    companyDataMap[company].push({
+                        x: locality,
+                        y: startingPrice,
+                        r: 10, // Fixed size for bubble map clarity
+                        meta: projectDataObj
+                    });
+
+                    // Check if this project is one of the 5 targeted for the deep-dive panels
+                    if (targetProjectNames.includes(project.toLowerCase())) {
+                        extractedTargetProjects.push(projectDataObj);
+                    }
+                }
+            }
+
+            /* ---------------------------------------------------------------------
+               BUILD CHART.JS DATASETS
+            --------------------------------------------------------------------- */
+            const localitiesArray = Array.from(uniqueLocalities).sort();
+
+            const datasets = Object.keys(companyDataMap).map((company) => {
+                const baseColor = companyColorMap[company];
+                const solidColor = baseColor.replace('0.85)', '1)');
+                return {
+                    label: company,
+                    data: companyDataMap[company],
+                    backgroundColor: baseColor,
+                    borderColor: solidColor,
+                    borderWidth: 2,
+                    hoverBorderWidth: 4,
+                    hoverBorderColor: '#ffffff'
+                };
+            });
+
+            /* Custom Plugin: Neon Glowing Bubbles */
+            const glowingBubblePlugin = {
+                id: 'glowingBubble',
+                beforeDatasetsDraw(chart, args, options) {
+                    const { ctx } = chart;
+                    chart.data.datasets.forEach((dataset, index) => {
+                        const meta = chart.getDatasetMeta(index);
+                        meta.data.forEach((element) => {
+                            ctx.save();
+                            ctx.shadowColor = dataset.borderColor;
+                            ctx.shadowBlur = 15; 
+                            ctx.beginPath();
+                            ctx.arc(element.x, element.y, element.options.radius, 0, Math.PI * 2);
+                            ctx.fillStyle = dataset.backgroundColor;
+                            ctx.fill();
+                            ctx.restore();
+                        });
+                    });
+                }
+            };
+            Chart.register(glowingBubblePlugin);
+
+            Chart.defaults.color = '#e0e0e0';
+            Chart.defaults.font.family = 'Poppins';
+
+            const ctx = document.getElementById('projectBubbleChart').getContext('2d');
+            
+            const chartConfig = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    labels: localitiesArray, // Categorical X-Axis
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    
+                    // Click Event to Open Link
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const datasetIndex = elements[0].datasetIndex;
+                            const index = elements[0].index;
+                            const link = chartConfig.data.datasets[datasetIndex].data[index].meta.link;
+                            if (link && link !== "#" && link.trim() !== "") {
+                                window.open(link, '_blank');
+                            }
+                        }
+                    },
+                    
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#ffffff', font: { size: 12, family: 'Poppins' }, padding: 15, usePointStyle: true }
+                        },
+                        
+                        // CUSTOM GLOWING MULTI-DATA TOOLTIP
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 35, 35, 0.98)',
+                            titleColor: '#8fe7e7',
+                            bodyColor: '#ffffff',
+                            borderColor: '#2c6e6e',
+                            borderWidth: 1,
+                            padding: 18,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            titleFont: { size: 18, weight: 'bold', family: 'Poppins' },
+                            bodyFont: { size: 13, family: 'Poppins', lineHeight: 1.6 },
+                            callbacks: {
+                                title: function(context) { return context[0].raw.meta.project; },
+                                label: function(context) {
+                                    const meta = context.raw.meta;
+                                    const priceString = "LKR " + context.raw.y.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                                    return [
+                                        `🏢 Company: ${meta.company}`,
+                                        `📍 Locality: ${meta.locality}`,
+                                        `📦 Total Units: ${meta.units}`,
+                                        `🔑 Status: ${meta.status} (${meta.year})`,
+                                        `💎 Condition: ${meta.condition}`,
+                                        `🛏️ Min. Beds: ${meta.beds} | 🛁 Min. Baths: ${meta.baths}`,
+                                        `💰 Starting Price: ${priceString}`,
+                                        `📋 Specs: ${meta.specs.substring(0, 50)}${meta.specs.length > 50 ? '...' : ''}`,
+                                        ` `,
+                                        `✨ CLICK BUBBLE TO EXPLORE WEBSITE ✨`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'category', 
+                            ticks: { color: '#ffffff', font: { size: 12, weight: '500' }, maxRotation: 45, minRotation: 45 },
+                            grid: { color: 'rgba(143, 231, 231, 0.08)' },
+                            title: { display: true, text: 'Locality Zones', color: '#8fe7e7', font: { size: 15, weight: 'bold', letterSpacing: 1 } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Starting Unit Price (LKR)', color: '#8fe7e7', font: { size: 15, weight: 'bold', letterSpacing: 1 } },
+                            ticks: { 
+                                color: '#ffffff',
+                                callback: function(value) {
+                                    if(value >= 1000000) return 'LKR ' + (value/1000000).toFixed(1) + 'M';
+                                    if(value >= 1000) return 'LKR ' + (value/1000).toFixed(0) + 'K';
+                                    return 'LKR ' + value;
+                                }
+                            },
+                            grid: { color: 'rgba(143, 231, 231, 0.08)' }
+                        }
+                    }
+                }
+            });
+
+            /* ---------------------------------------------------------------------
+               BUILD THE 5 TARGET INSIGHTS PANELS
+            --------------------------------------------------------------------- */
+            const insightsContainer = document.getElementById('insights-container');
+            insightsContainer.innerHTML = ''; 
+
+            if (extractedTargetProjects.length === 0) {
+                insightsContainer.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 50px; background: rgba(0,0,0,0.5); border-radius: 20px;">Target projects not found in live data sheet. Please ensure spellings match exactly.</div>`;
+            } else {
+                extractedTargetProjects.forEach((proj, index) => {
+                    // Extract solid color for borders/glows
+                    const solidColor = proj.color.replace('0.85)', '1)');
+
+                    const cardHTML = `
+                        <div class="insight-card" style="border-top: 5px solid ${solidColor}; box-shadow: 0 8px 30px ${proj.color.replace('0.85)', '0.4)')}; animation-delay: ${index * 0.15}s;">
+                            <div class="insight-title">${proj.project}</div>
+                            <div class="insight-company" style="color: ${solidColor}; border-bottom-color: ${proj.color.replace('0.85)', '0.3)')};">
+                                ${proj.company}
+                            </div>
+                            
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-location-dot" style="color:${solidColor}"></i>
+                                    <div><strong>Locality</strong> ${proj.locality}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-tag" style="color:${solidColor}"></i>
+                                    <div><strong>Starting Price</strong> ${proj.priceStr}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-clock" style="color:${solidColor}"></i>
+                                    <div><strong>Completion</strong> ${proj.year}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-bars-progress" style="color:${solidColor}"></i>
+                                    <div><strong>Status</strong> ${proj.status}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-bed" style="color:${solidColor}"></i>
+                                    <div><strong>Configuration</strong> ${proj.beds} Bed, ${proj.baths} Bath</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-gem" style="color:${solidColor}"></i>
+                                    <div><strong>Condition</strong> ${proj.condition}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fa-solid fa-cubes" style="color:${solidColor}"></i>
+                                    <div><strong>Total Units</strong> ${proj.units}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-specs" style="border-left-color: ${solidColor};">
+                                <span style="color: #fff; font-weight:600; text-transform:uppercase; font-size:0.8rem;">Project Specifications:</span><br>
+                                ${proj.specs}
+                            </div>
+
+                            ${proj.link !== '#' ? `<a href="${proj.link}" target="_blank" class="btn-explore" style="border-color:${proj.color.replace('0.85)', '0.4)')}"><i class="fa-solid fa-link"></i> Explore Full Details</a>` : ''}
+                        </div>
+                    `;
+                    insightsContainer.innerHTML += cardHTML;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

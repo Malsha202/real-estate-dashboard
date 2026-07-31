@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Group - Awards & Certifications Matrix</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ---------------- CORE & THEME COLORS ---------------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+        
+        body { 
+            background: linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.95)), url('image17.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(14, 51, 51, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #8fe7e7; border-radius: 4px; }
+
+        /* ---------------- THEMED FLOATING PARTICLES (Trophies & Medals) ---------------- */
+        #particle-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .glow-particle {
+            position: absolute;
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 10px currentColor);
+            animation: rhythmicFloat infinite ease-in-out alternate;
+            opacity: 0.15;
+        }
+
+        @keyframes rhythmicFloat {
+            0% { transform: translateY(0) scale(0.8) rotate(-10deg); opacity: 0.1; }
+            50% { opacity: 0.3; filter: drop-shadow(0 0 20px currentColor); }
+            100% { transform: translateY(-40px) scale(1.2) rotate(10deg); opacity: 0.05; }
+        }
+
+        /* ---------------- NAVIGATION ---------------- */
+        .nav-container {
+            position: relative; z-index: 100;
+            padding: 30px 4% 10px;
+            display: flex; justify-content: space-between;
+        }
+        .btn-nav {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 35px; font-size: 0.95rem; font-weight: 600; 
+            color: #ffffff; background-color: #2c6e6e; border: 2px solid #2d6b6b;
+            border-radius: 50px; text-decoration: none; transition: all 0.3s ease; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-nav:hover { 
+            background-color: #0e3333; border-color: #8fe7e7; 
+            transform: translateY(-4px); box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3); 
+        }
+
+        /* ---------------- MAIN CONTENT ---------------- */
+        .main-content {
+            position: relative; z-index: 10;
+            padding: 10px 4% 50px; max-width: 1700px; margin: 0 auto;
+        }
+
+        .header-box { text-align: center; margin-bottom: 30px; animation: fadeInDown 1s ease-out; }
+        .header-box h1 { font-size: 2.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .header-box h2 { font-size: 1.1rem; color: #8fe7e7; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+
+        #data-status {
+            text-align: center; color: #8fe7e7; font-size: 1.2rem; font-weight: 500; 
+            animation: pulse 1.5s infinite; margin-bottom: 30px;
+        }
+
+        /* ---------------- DYNAMIC SCROLLABLE PANELS ---------------- */
+        .company-panels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+            display: none; /* Hidden until loaded */
+        }
+
+        .company-glass-card {
+            background: rgba(14, 51, 51, 0.5);
+            backdrop-filter: blur(15px);
+            border-top: 4px solid;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            max-height: 500px;
+        }
+
+        .company-header {
+            font-size: 1.4rem; font-weight: 800; color: #ffffff;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
+            padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .lists-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            overflow-y: auto; /* Scrollable internal area */
+            padding-right: 5px;
+            flex-grow: 1;
+        }
+
+        .list-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .list-title {
+            font-size: 1rem; font-weight: 600; color: #d4eeee;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px;
+        }
+
+        .count-badge {
+            background: rgba(143, 231, 231, 0.2); color: #ffffff;
+            padding: 2px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;
+        }
+
+        .item-list {
+            list-style: none; padding: 0; margin: 0;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .item-list li {
+            background: rgba(255,255,255,0.03);
+            border-left: 2px solid;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #e0e0e0;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+
+        .item-list li i { margin-top: 3px; font-size: 0.9rem; }
+
+        /* ---------------- BAR CHART SECTION ---------------- */
+        .chart-section {
+            background: rgba(26, 80, 80, 0.35); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(143, 231, 231, 0.2); 
+            border-radius: 24px;
+            padding: 30px 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            margin-bottom: 50px;
+            display: none; /* Hidden until loaded */
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .chart-header {
+            text-align: center; font-size: 1.5rem; font-weight: 700; color: #ffffff;
+            margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .chart-wrapper {
+            height: 500px; 
+            width: 100%;
+        }
+
+        /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            display: none;
+        }
+
+        .insight-card {
+            background: rgba(14, 51, 51, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(44, 110, 110, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .insight-card:hover {
+            transform: translateY(-8px); background: rgba(26, 80, 80, 0.7); border-color: #8fe7e7;
+        }
+
+        .insight-icon { font-size: 2.2rem; color: #8fe7e7; margin-bottom: 15px; }
+        .insight-title { font-size: 1.2rem; font-weight: 700; color: #ffffff; margin-bottom: 12px; }
+        .insight-text { font-size: 0.95rem; color: #d4eeee; line-height: 1.7; font-weight: 300; }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        @media (max-width: 900px) { 
+            .company-panels-grid { grid-template-columns: 1fr; }
+            .lists-container { grid-template-columns: 1fr; }
+            .insights-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="particle-container"></div>
+
+    <div class="nav-container">
+        <a href="page15.html" class="btn-nav"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <a href="page17.html" class="btn-nav">Next <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="header-box">
+            <h1>Industry Recognition Matrix</h1>
+            <h2>Comprehensive Competitor Awards & Certifications Tracking</h2>
+        </div>
+
+        <div id="data-status">Fetching Live Awards & Certifications Data...</div>
+
+        <div class="company-panels-grid" id="panels-container">
+            </div>
+
+        <div class="chart-section" id="chart-section-container">
+            <div class="chart-header">Competitor Volume Comparison</div>
+            <div class="chart-wrapper">
+                <canvas id="awardsBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="insights-grid" id="insights-container">
+            <div class="insight-card">
+                <i class="fa-solid fa-award insight-icon"></i>
+                <div class="insight-title">Brand Prestige & Trust</div>
+                <div class="insight-text">
+                    Competitors with a high volume of industry awards actively leverage them in marketing to build consumer trust. Prime Group must identify which specific categories (e.g., Luxury, Sustainability) competitors are dominating.
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <i class="fa-solid fa-certificate insight-icon"></i>
+                <div class="insight-title">Compliance & Quality Certifications</div>
+                <div class="insight-text">
+                    Certifications (ISO, Green Building, etc.) dictate a company's operational excellence. A high certification count indicates a strong internal compliance structure that appeals to institutional and foreign investors.
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <i class="fa-solid fa-magnifying-glass-chart insight-icon"></i>
+                <div class="insight-title">Strategic Gap Analysis</div>
+                <div class="insight-text">
+                    Review the scrollable panels to find "unclaimed" or rare awards. Targeting niche certifications or international awards that local competitors lack will provide Prime Group with a unique competitive edge.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------------------
+           1. THEMED PARTICLES GENERATOR (NO YELLOW/GREEN - ONLY TROPHIES/MEDALS)
+        ------------------------------------------------------------------------- */
+        const particleContainer = document.getElementById('particle-container');
+        const icons = ['fa-trophy', 'fa-medal'];
+        // Allowed Theme Colors (Teal, Cyan, Blue, Purple, Pink, White)
+        const allowedColors = ['#8fe7e7', '#00e5ff', '#3399ff', '#dcd0ff', '#ffb3ba', '#ffffff'];
+
+        for(let i = 0; i < 35; i++) {
+            let particle = document.createElement('i');
+            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+            const randomColor = allowedColors[Math.floor(Math.random() * allowedColors.length)];
+            
+            particle.className = `fa-solid ${randomIcon} glow-particle`;
+            particle.style.color = randomColor;
+            
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            
+            particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+            particle.style.animationDelay = (Math.random() * 5) + 's';
+            particleContainer.appendChild(particle);
+        }
+
+        /* -------------------------------------------------------------------------
+           2. LIVE FETCH LOGIC
+        ------------------------------------------------------------------------- */
+        const publishedCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSx4vbP2ZQsXDTMmkw7EU1Jv8hXcp_lNGetHROSgu0AU7vcV_C34BghljJK8zOk90DT9iAmulZhZ3kA/pub?output=csv";
+
+        Papa.parse(publishedCsvUrl, {
+            download: true,
+            header: false,
+            skipEmptyLines: true,
+            complete: function(results) {
+                document.getElementById('data-status').style.display = 'none';
+                document.getElementById('panels-container').style.display = 'grid';
+                document.getElementById('chart-section-container').style.display = 'block';
+                document.getElementById('insights-container').style.display = 'grid';
+                processAndRender(results.data);
+            },
+            error: function(err) {
+                document.getElementById('data-status').innerText = "Error connecting to live data.";
+                document.getElementById('data-status').style.color = "#ff6b6b";
+            }
+        });
+
+        /* -------------------------------------------------------------------------
+           3. DATA PROCESSING & RENDER
+        ------------------------------------------------------------------------- */
+        function processAndRender(rawData) {
+            const companyDataMap = {};
+
+            // Strictly allowed color palette for companies (No Yellow/Green)
+            const companyPalette = [
+                "#8fe7e7", "#008cff", "#b400ff", "#ff0096", "#00e5ff", 
+                "#dcd0ff", "#3399ff", "#ffb3ba", "#ffffff", "#88ccff"
+            ];
+            const companyColorAssignment = {};
+            let colorIdx = 0;
+
+            // Process Data (Skipping header row 0)
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                let company = row[0] ? row[0].trim() : "";
+                
+                // If cell contains multiple items separated by line breaks, split them
+                let awardsRaw = row[1] ? row[1].split('\n').map(s => s.trim()).filter(s => s) : [];
+                let certsRaw = row[2] ? row[2].split('\n').map(s => s.trim()).filter(s => s) : [];
+
+                if (company && company !== "Unknown") {
+                    if (!companyDataMap[company]) {
+                        companyDataMap[company] = { awards: [], certs: [] };
+                        companyColorAssignment[company] = companyPalette[colorIdx % companyPalette.length];
+                        colorIdx++;
+                    }
+
+                    // Add valid items
+                    awardsRaw.forEach(aw => {
+                        if (aw.toLowerCase() !== 'n/a' && aw !== '-') companyDataMap[company].awards.push(aw);
+                    });
+                    
+                    certsRaw.forEach(ct => {
+                        if (ct.toLowerCase() !== 'n/a' && ct !== '-') companyDataMap[company].certs.push(ct);
+                    });
+                }
+            }
+
+            /* --- RENDER SCROLLABLE PANELS --- */
+            const panelsContainer = document.getElementById('panels-container');
+            panelsContainer.innerHTML = '';
+            
+            let delayCounter = 0;
+
+            for (const [company, data] of Object.entries(companyDataMap)) {
+                const color = companyColorAssignment[company];
+                
+                let awardsListHTML = data.awards.length > 0 
+                    ? data.awards.map(aw => `<li style="border-left-color: ${color};"><i class="fa-solid fa-trophy" style="color:${color}"></i> ${aw}</li>`).join('')
+                    : `<li><i class="fa-solid fa-minus" style="color:#777"></i> No awards listed</li>`;
+                
+                let certsListHTML = data.certs.length > 0 
+                    ? data.certs.map(ct => `<li style="border-left-color: ${color};"><i class="fa-solid fa-certificate" style="color:${color}"></i> ${ct}</li>`).join('')
+                    : `<li><i class="fa-solid fa-minus" style="color:#777"></i> No certifications listed</li>`;
+
+                const panelHTML = `
+                    <div class="company-glass-card" style="border-top-color: ${color}; box-shadow: 0 15px 35px ${color}33; animation-delay: ${delayCounter * 0.1}s;">
+                        <div class="company-header">
+                            <i class="fa-regular fa-building" style="color: ${color}"></i> ${company}
+                        </div>
+                        <div class="lists-container">
+                            <div class="list-section">
+                                <div class="list-title">
+                                    <span>Awards</span>
+                                    <span class="count-badge" style="background: ${color}33; color: ${color}">${data.awards.length}</span>
+                                </div>
+                                <ul class="item-list">${awardsListHTML}</ul>
+                            </div>
+                            <div class="list-section">
+                                <div class="list-title">
+                                    <span>Certifications</span>
+                                    <span class="count-badge" style="background: ${color}33; color: ${color}">${data.certs.length}</span>
+                                </div>
+                                <ul class="item-list">${certsListHTML}</ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                panelsContainer.innerHTML += panelHTML;
+                delayCounter++;
+            }
+
+            /* --- RENDER BAR CHART --- */
+            const companies = Object.keys(companyDataMap);
+            const awardsDataArray = companies.map(comp => companyDataMap[comp].awards.length);
+            const certsDataArray = companies.map(comp => companyDataMap[comp].certs.length);
+
+            Chart.defaults.color = '#e0e0e0';
+            Chart.defaults.font.family = 'Poppins';
+
+            /* Custom Glowing Bar Plugin */
+            const glowingBarPlugin = {
+                id: 'glowingBar',
+                beforeDatasetDraw(chart, args, options) {
+                    const { ctx } = chart;
+                    const dataset = chart.data.datasets[args.index];
+                    ctx.save();
+                    ctx.shadowColor = dataset.borderColor;
+                    ctx.shadowBlur = 15;
+                },
+                afterDatasetDraw(chart, args, options) {
+                    chart.ctx.restore();
+                }
+            };
+            Chart.register(glowingBarPlugin);
+
+            const ctx = document.getElementById('awardsBarChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: companies,
+                    datasets: [
+                        {
+                            label: 'Total Awards',
+                            data: awardsDataArray,
+                            backgroundColor: 'rgba(143, 231, 231, 0.7)', // Cyan
+                            borderColor: '#8fe7e7',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Total Certifications',
+                            data: certsDataArray,
+                            backgroundColor: 'rgba(180, 0, 255, 0.7)', // Purple
+                            borderColor: '#b400ff',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#ffffff', font: { size: 13, family: 'Poppins' }, padding: 15, usePointStyle: true }
+                        },
+                        // Custom Tooltip to show actual item names!
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 35, 35, 0.95)',
+                            titleColor: '#8fe7e7',
+                            bodyColor: '#ffffff',
+                            borderColor: '#2c6e6e',
+                            borderWidth: 1,
+                            padding: 18,
+                            titleFont: { size: 16, weight: 'bold', family: 'Poppins' },
+                            bodyFont: { size: 12, family: 'Poppins', lineHeight: 1.5 },
+                            callbacks: {
+                                label: function(context) {
+                                    const company = context.chart.data.labels[context.dataIndex];
+                                    const datasetLabel = context.dataset.label;
+                                    const count = context.raw;
+                                    
+                                    let detailsArray = [`${datasetLabel}: ${count}`];
+                                    
+                                    // Append actual items to the tooltip based on the dataset hovered
+                                    if(datasetLabel === 'Total Awards' && count > 0) {
+                                        detailsArray.push('--- Listed Awards ---');
+                                        companyDataMap[company].awards.forEach(aw => detailsArray.push(`• ${aw}`));
+                                    } else if (datasetLabel === 'Total Certifications' && count > 0) {
+                                        detailsArray.push('--- Listed Certifications ---');
+                                        companyDataMap[company].certs.forEach(ct => detailsArray.push(`• ${ct}`));
+                                    }
+                                    
+                                    return detailsArray;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#ffffff', font: { size: 12, weight: '500' } },
+                            grid: { color: 'rgba(143, 231, 231, 0.05)' },
+                            title: { display: true, text: 'Competitor / Company', color: '#8fe7e7', font: { size: 14, weight: 'bold' } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#ffffff', stepSize: 1 },
+                            grid: { color: 'rgba(143, 231, 231, 0.08)' },
+                            title: { display: true, text: 'Number of Accolades', color: '#8fe7e7', font: { size: 14, weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

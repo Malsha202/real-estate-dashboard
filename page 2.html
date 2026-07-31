@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Dashboard Overview</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* CSS Reset & Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body,
+      html {
+        width: 100%;
+        min-height: 100vh;
+        background-color: #0e3333;
+        color: #ffffff;
+        overflow-x: hidden;
+      }
+
+      /* ---------------- BACKGROUND SETUP ---------------- */
+      .background-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Updated to use prime.jpg as requested */
+        background: url("prime.jpg") no-repeat center center;
+        background-size: cover;
+        z-index: -2;
+      }
+
+      .background-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(14, 51, 51, 0.75);
+        z-index: -1;
+      }
+
+      /* ---------------- FLOATING URBAN PARTICLES ---------------- */
+      .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        bottom: -10px;
+        width: 4px;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        animation: floatUp linear infinite;
+      }
+
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 0;
+        }
+        20% {
+          opacity: 1;
+        }
+        80% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100vh) scale(1.5);
+          opacity: 0;
+        }
+      }
+
+      /* ---------------- MAIN LAYOUT ---------------- */
+      .container {
+        position: relative;
+        z-index: 10;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 35px 40px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      }
+
+      /* ---------------- HEADER SECTION ---------------- */
+      .header-section {
+        text-align: center;
+        animation: fadeInDown 1s ease-out;
+      }
+
+      .header-section h1 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .header-section h2 {
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: #8fe7e7;
+        margin-bottom: 20px;
+      }
+
+      .header-section p {
+        font-size: 0.95rem;
+        line-height: 1.8;
+        max-width: 900px;
+        margin: 0 auto;
+        color: #e0e0e0;
+        font-weight: 300;
+      }
+
+      /* ---------------- KPI CARDS GRID (Top 4 Items) ---------------- */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+      }
+
+      .kpi-card {
+        background: rgba(14, 51, 51, 0.5);
+        border: 1px solid rgba(44, 110, 110, 0.4);
+        border-radius: 16px;
+        padding: 30px 20px;
+        text-align: center;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .kpi-card:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .kpi-card:nth-child(2) {
+        animation-delay: 0.4s;
+      }
+      .kpi-card:nth-child(3) {
+        animation-delay: 0.6s;
+      }
+      .kpi-card:nth-child(4) {
+        animation-delay: 0.8s;
+      }
+
+      .kpi-card:hover {
+        transform: translateY(-10px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #2d6b6b;
+        box-shadow: 0 0 25px rgba(45, 107, 107, 0.8);
+      }
+
+      /* Smaller icons for main KPIs as requested */
+      .kpi-icon {
+        font-size: 1.5rem;
+        color: #ffffff;
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+      }
+
+      .kpi-card:hover .kpi-icon {
+        transform: scale(1.1);
+      }
+
+      .kpi-number {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .kpi-number span {
+        font-size: 1.5rem;
+        color: #8fe7e7;
+        margin-left: 2px;
+      }
+
+      .kpi-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #c0c0c0;
+        font-weight: 500;
+      }
+
+      /* ---------------- SOCIAL MEDIA CENTERED PANEL ---------------- */
+      .social-media-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        animation-delay: 1s;
+      }
+
+      .social-card {
+        width: 100%;
+        max-width: 900px; /* Keeps it centered nicely */
+        background: rgba(14, 51, 51, 0.5);
+        border: 1px solid rgba(44, 110, 110, 0.4);
+        border-radius: 16px;
+        padding: 25px 40px;
+        transition: all 0.4s ease;
+      }
+
+      .social-card:hover {
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #2d6b6b;
+        box-shadow: 0 0 25px rgba(45, 107, 107, 0.8);
+      }
+
+      .social-card .kpi-title {
+        text-align: center;
+        color: #ffffff;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+      }
+
+      .social-stats {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+
+      .social-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px; /* Space between icon and text */
+      }
+
+      /* Larger icons for Social Media as requested */
+      .social-item i {
+        font-size: 2.8rem;
+      }
+
+      .social-text {
+        display: flex;
+        align-items: baseline;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #ffffff;
+      }
+
+      .social-text span.suffix {
+        font-size: 1rem;
+        color: #8fe7e7;
+        margin-left: 3px;
+      }
+
+      /* ---------------- ACHIEVEMENTS PANEL ---------------- */
+      .achievements-section {
+        animation: fadeInUp 1.2s ease-out forwards;
+        opacity: 0;
+        animation-delay: 1.2s;
+      }
+
+      .achievements-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .achievements-header i {
+        font-size: 2rem;
+        color: #ffd700;
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      }
+
+      .achievements-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .scroll-wrapper {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        padding-bottom: 20px;
+        scrollbar-width: thin;
+        scrollbar-color: #2c6e6e rgba(14, 51, 51, 0.3);
+      }
+
+      .scroll-wrapper::-webkit-scrollbar {
+        height: 8px;
+      }
+      .scroll-wrapper::-webkit-scrollbar-track {
+        background: rgba(14, 51, 51, 0.3);
+        border-radius: 10px;
+      }
+      .scroll-wrapper::-webkit-scrollbar-thumb {
+        background-color: #2c6e6e;
+        border-radius: 10px;
+      }
+
+      .award-card {
+        min-width: 280px;
+        background: rgba(14, 51, 51, 0.6);
+        border: 1px solid #1a5050;
+        border-radius: 12px;
+        padding: 25px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      .award-card:hover {
+        background: #1a5050;
+        border-color: #2d6b6b;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(45, 107, 107, 0.6);
+      }
+
+      .award-icon {
+        font-size: 2rem;
+        color: #8fe7e7;
+        margin-bottom: 15px;
+      }
+
+      .award-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.4;
+        margin-bottom: 10px;
+        color: #ffffff;
+      }
+
+      .award-year {
+        font-size: 0.8rem;
+        color: #a0a0a0;
+        font-weight: 700;
+      }
+
+      .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        z-index: 100;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+      }
+
+      .back-btn:hover {
+        opacity: 1;
+      }
+
+      /* ---------------- ANIMATIONS & MEDIA QUERIES ---------------- */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .kpi-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .social-stats {
+          flex-direction: column;
+          gap: 25px;
+        }
+        .social-card {
+          padding: 30px;
+        }
+      }
+      @media (max-width: 600px) {
+        .kpi-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      /* ---------------- NEXT PAGE BUTTON (BOTTOM RIGHT) ---------------- */
+      .bottom-right-container {
+        display: flex;
+        justify-content: flex-end; /* Pushes the button to the right */
+        width: 100%;
+        margin-top: 20px;
+        padding-bottom: 40px;
+        animation: fadeInUp 1.5s ease-out forwards;
+        opacity: 0;
+        animation-delay: 1.5s; /* Appears smoothly after the achievements load */
+      }
+
+      .btn-next {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 40px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e; /* Same as View More */
+        border: 2px solid #2d6b6b; /* Same as View More */
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .btn-next i {
+        margin-left: 10px;
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+      }
+
+      .btn-next:hover {
+        background-color: #0e3333; /* Dark theme color on hover */
+        border-color: #1a5050;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+      }
+
+      .btn-next:hover i {
+        transform: translateX(5px); /* Arrow slides to the right on hover */
+      }
+    </style>
+  </head>
+  <body>
+    <a href="page 1.html" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Back to Start
+    </a>
+
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+      <header class="header-section glass-panel">
+        <h1>Prime Group</h1>
+        <h2>Who We Are & What We Have Built</h2>
+        <p>
+          Prime Group has emerged as one of Sri Lanka’s leading private real
+          estate developers through its diversified portfolio of apartment,
+          housing, and land development projects, delivering innovative urban
+          living solutions while shaping modern residential landscapes across
+          the country.
+        </p>
+      </header>
+
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <i class="fas fa-calendar-check kpi-icon"></i>
+          <div class="kpi-number" data-target="30">0<span>+</span></div>
+          <div class="kpi-title">Years in Business</div>
+        </div>
+
+        <div class="kpi-card">
+          <i class="fas fa-map-marked-alt kpi-icon"></i>
+          <div class="kpi-number" data-target="10000">0<span>+</span></div>
+          <div class="kpi-title">Land Projects</div>
+        </div>
+
+        <div class="kpi-card">
+          <i class="fas fa-building kpi-icon"></i>
+          <div class="kpi-number" data-target="50">0<span>+</span></div>
+          <div class="kpi-title">Apartment Projects</div>
+        </div>
+
+        <div class="kpi-card">
+          <i class="fas fa-home kpi-icon"></i>
+          <div class="kpi-number" data-target="34">0</div>
+          <div class="kpi-title">Housing Projects</div>
+        </div>
+      </section>
+
+      <section class="social-media-container">
+        <div class="social-card">
+          <div class="kpi-title">Social Media Popularity</div>
+          <div class="social-stats">
+            <div class="social-item">
+              <i class="fab fa-facebook" style="color: #1877f2"></i>
+              <div class="social-text">
+                <span class="social-number" data-target="305">0</span
+                ><span class="suffix">K+</span>
+              </div>
+            </div>
+            <div class="social-item">
+              <i class="fab fa-youtube" style="color: #ff0000"></i>
+              <div class="social-text">
+                <span class="social-number" data-target="582">0</span
+                ><span class="suffix">K+</span>
+              </div>
+            </div>
+            <div class="social-item">
+              <i class="fab fa-instagram" style="color: #e1306c"></i>
+              <div class="social-text">
+                <span class="social-number" data-target="20">0</span
+                ><span class="suffix">.6K+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="achievements-section glass-panel">
+        <div class="achievements-header">
+          <i class="fas fa-trophy"></i>
+          <h3>Prime Achievements & Accolades</h3>
+        </div>
+
+        <div class="scroll-wrapper">
+          <div class="award-card">
+            <i class="fas fa-award award-icon"></i>
+            <div class="award-title">
+              Most Valuable Real Estate Consumer Brand
+            </div>
+            <div class="award-year">2021 & 2023</div>
+          </div>
+          <div class="award-card">
+            <i class="fas fa-medal award-icon"></i>
+            <div class="award-title">Best Developer of Sri Lanka</div>
+            <div class="award-year">2018 & 2019</div>
+          </div>
+          <div class="award-card">
+            <i class="fas fa-star award-icon"></i>
+            <div class="award-title">Great Place To Work</div>
+            <div class="award-year">2015 - 2018</div>
+          </div>
+          <div class="award-card">
+            <i class="fas fa-globe-asia award-icon"></i>
+            <div class="award-title">Asia Pacific Property Awards Winner</div>
+            <div class="award-year">Regional Recognition</div>
+          </div>
+          <div class="award-card">
+            <i class="fas fa-certificate award-icon"></i>
+            <div class="award-title">ISO 9001: 2008 Quality Certification</div>
+            <div class="award-year">Certified</div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="bottom-right-container">
+      <a href="page3.html" class="btn-next">
+        Next <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <script>
+      // Floating Particles
+      const particleContainer = document.getElementById("particles");
+      for (let i = 0; i < 40; i++) {
+        let particle = document.createElement("div");
+        particle.classList.add("particle");
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.animationDuration = `${Math.random() * 10 + 5}s`;
+        particle.style.animationDelay = `${Math.random() * 10}s`;
+        particleContainer.appendChild(particle);
+      }
+
+      // Animate Counting Numbers (Fixed for Commas)
+      const counters = document.querySelectorAll(".kpi-number, .social-number");
+
+      const observer = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const targetEl = entry.target;
+              const targetValue = parseInt(
+                targetEl.getAttribute("data-target"),
+              );
+              const hasPlus = targetEl.innerHTML.includes("<span>+</span>");
+
+              const updateCount = () => {
+                // Strip out commas and spans for the calculation
+                const currentText = targetEl.innerText
+                  .replace(/,/g, "")
+                  .replace("+", "");
+                let current = parseInt(currentText);
+                if (isNaN(current)) current = 0;
+
+                // Dynamic increment based on the size of the target number
+                const increment = Math.ceil(targetValue / 100);
+
+                if (current < targetValue) {
+                  let nextVal = current + increment;
+                  if (nextVal > targetValue) nextVal = targetValue;
+
+                  // Apply formatting (commas for numbers >= 1000)
+                  targetEl.innerHTML =
+                    nextVal.toLocaleString() +
+                    (hasPlus ? "<span>+</span>" : "");
+                  setTimeout(updateCount, 25);
+                } else {
+                  targetEl.innerHTML =
+                    targetValue.toLocaleString() +
+                    (hasPlus ? "<span>+</span>" : "");
+                }
+              };
+
+              updateCount();
+              observer.unobserve(targetEl);
+            }
+          });
+        },
+        { threshold: 0.5 },
+      );
+
+      counters.forEach((counter) => observer.observe(counter));
+    </script>
+  </body>
+</html>

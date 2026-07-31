@@ -1,0 +1,1986 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Competitor Intelligence Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: #0e3333;
+        overflow-x: hidden;
+        color: white;
+      }
+
+      /* MAIN CONTAINER */
+
+      .container {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden;
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.92), rgba(14, 51, 51, 0.95)),
+          url("world-map.jpg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+
+      /* SRI LANKA MAP */
+
+      .srilanka-map {
+        position: absolute;
+        width: 350px;
+        right: 3%;
+        top: 10%;
+        opacity: 0.08;
+        z-index: 1;
+        filter: drop-shadow(0 0 10px #2c6e6e) drop-shadow(0 0 25px #2c6e6e);
+      }
+
+      /* GLOWING CONNECTION LINES */
+
+      .line {
+        position: absolute;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #2c6e6e, transparent);
+        z-index: 2;
+        opacity: 0.4;
+        animation: lineMove 6s linear infinite;
+      }
+
+      .line1 {
+        width: 600px;
+        top: 20%;
+        left: 20%;
+        transform: rotate(20deg);
+      }
+
+      .line2 {
+        width: 450px;
+        top: 50%;
+        left: 35%;
+        transform: rotate(-18deg);
+      }
+
+      .line3 {
+        width: 500px;
+        top: 70%;
+        left: 10%;
+        transform: rotate(10deg);
+      }
+
+      @keyframes lineMove {
+        0% {
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 0.1;
+        }
+      }
+
+      /* PARTICLES */
+
+      .particles span {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2c6e6e;
+        box-shadow:
+          0 0 10px #2c6e6e,
+          0 0 20px #2c6e6e,
+          0 0 40px #2c6e6e;
+        animation: floatParticle linear infinite;
+      }
+
+      .particles span:nth-child(1) {
+        left: 10%;
+        top: 90%;
+        animation-duration: 18s;
+      }
+
+      .particles span:nth-child(2) {
+        left: 30%;
+        top: 95%;
+        animation-duration: 14s;
+      }
+
+      .particles span:nth-child(3) {
+        left: 50%;
+        top: 92%;
+        animation-duration: 16s;
+      }
+
+      .particles span:nth-child(4) {
+        left: 70%;
+        top: 94%;
+        animation-duration: 20s;
+      }
+
+      .particles span:nth-child(5) {
+        left: 90%;
+        top: 91%;
+        animation-duration: 13s;
+      }
+
+      .particles span:nth-child(6) {
+        left: 80%;
+        top: 97%;
+        animation-duration: 17s;
+      }
+
+      .particles span:nth-child(7) {
+        left: 15%;
+        top: 96%;
+        animation-duration: 12s;
+      }
+
+      @keyframes floatParticle {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 0;
+        }
+
+        10% {
+          opacity: 1;
+        }
+
+        100% {
+          transform: translateY(-1200px) scale(1.8);
+          opacity: 0;
+        }
+      }
+
+      /* HEADER */
+
+      .header {
+        position: relative;
+        z-index: 5;
+        padding: 10px 50px 20px;
+      }
+
+      .small-title {
+        color: #8fd6d6;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+
+      .main-title {
+        margin-top: 12px;
+        font-size: 42px;
+        font-weight: 700;
+      }
+
+      .subtitle {
+        margin-top: 18px;
+        color: #d9f2f2;
+        line-height: 1.9;
+        max-width: 1000px;
+      }
+
+      /* CARD GRID */
+
+      .cards-grid {
+        position: relative;
+        z-index: 5;
+        padding: 20px 40px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      /* GLASS CARD */
+
+      .card {
+        position: relative;
+        overflow: hidden;
+
+        padding: 20px;
+
+        border-radius: 28px;
+
+        background: rgba(255, 255, 255, 0.06);
+
+        border: 1px solid rgba(255, 255, 255, 0.12);
+
+        backdrop-filter: blur(18px);
+
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+
+        transition: 0.4s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-8px);
+
+        border: 1px solid rgba(44, 110, 110, 0.8);
+
+        background: rgba(44, 110, 110, 0.12);
+
+        box-shadow:
+          0 0 20px rgba(44, 110, 110, 0.5),
+          0 0 40px rgba(44, 110, 110, 0.3);
+      }
+
+      /* LIGHT SWEEP */
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -120%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          transparent,
+          rgba(255, 255, 255, 0.18),
+          transparent
+        );
+        transform: skewX(-20deg);
+        transition: 0.9s;
+      }
+
+      .card:hover::before {
+        left: 140%;
+      }
+
+      /* CARD TOP */
+
+      .card-top {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+
+      /* LOGO */
+
+      .logo {
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        background: rgba(44, 110, 110, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 28px;
+        color: #8fd6d6;
+
+        box-shadow:
+          0 0 10px #2c6e6e,
+          0 0 20px #2c6e6e;
+      }
+
+      .company-name {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .company-type {
+        margin-top: 5px;
+        color: #bdeaea;
+        font-size: 13px;
+      }
+
+      /* INFO GRID */
+
+      .info-grid {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .info-box {
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(26, 80, 80, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .info-title {
+        font-size: 11px;
+        color: #8fd6d6;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .info-value {
+        margin-top: 5px;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      /* BUTTON */
+
+      .explore-btn {
+        margin-top: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+
+        padding: 12px 24px;
+
+        border-radius: 16px;
+
+        text-decoration: none;
+
+        background: #2c6e6e;
+
+        color: white;
+
+        transition: 0.4s ease;
+      }
+
+      .explore-btn:hover {
+        background: #2d6b6b;
+
+        transform: translateY(-3px);
+
+        box-shadow: 0 0 15px rgba(44, 110, 110, 0.7);
+      }
+
+      /* CHART PANELS */
+
+      .charts-section {
+        position: relative;
+        z-index: 5;
+
+        padding: 30px 40px;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+      }
+
+      .chart-panel {
+        padding: 25px;
+
+        border-radius: 28px;
+
+        background: rgba(255, 255, 255, 0.06);
+
+        border: 1px solid rgba(255, 255, 255, 0.12);
+
+        backdrop-filter: blur(18px);
+
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+      }
+
+      .chart-title {
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .chart-subtitle {
+        margin-top: 10px;
+        color: #d4eeee;
+        line-height: 1.8;
+        font-size: 14px;
+      }
+
+      .chart-box {
+        margin-top: 20px;
+        height: 420px;
+      }
+
+      /* NAVIGATION */
+
+      .navigation {
+        position: relative;
+        z-index: 5;
+
+        padding: 30px 40px 10px;
+
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 34px;
+
+        border: none;
+
+        border-radius: 18px;
+
+        background: #2c6e6e;
+
+        color: white;
+        text-decoration: none;
+
+        font-size: 15px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition: 0.4s ease;
+      }
+
+      .nav-btn:hover {
+        background: #2d6b6b;
+
+        transform: translateY(-4px);
+
+        box-shadow: 0 0 20px rgba(44, 110, 110, 0.5);
+      }
+
+      /* RESPONSIVE */
+
+      @media (max-width: 1200px) {
+        .cards-grid,
+        .charts-section {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .main-title {
+          font-size: 30px;
+        }
+
+        .cards-grid,
+        .charts-section,
+        .navigation,
+        .header {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <img src="srilanka-outline.jpg" class="srilanka-map" />
+
+      <div class="line line1"></div>
+      <div class="line line2"></div>
+      <div class="line line3"></div>
+
+      <div class="particles">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="navigation">
+        <a href="page3.html" class="nav-btn">
+          <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+        <a href="page5.html" class="nav-btn">
+          Next <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="header">
+        <div class="small-title">COMPETITOR INTELLIGENCE MATRIX</div>
+
+        <h1 class="main-title">
+          Apartment Developer Competitive Positioning Network
+        </h1>
+
+        <p class="subtitle">
+          Analyze the operational scale, office distribution, experience level,
+          employee capacity, and project performance of Sri Lanka’s leading
+          apartment developers using advanced strategic intelligence
+          visualization.
+        </p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Prime Group</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">30+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">50+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">13</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">500-1000</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">
+                Colombo, Kalutara, Galle, Kandy, Kurunegala, Anuradhapura,
+                Embilipitiya,Horana
+              </div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">
+                Sri Lanka, United Arab Emirates (Dudai), India (Cochin and
+                Bangalore), Australia (Melbourne)Philippines (Taguig City),
+                Japan (Chiba), Russia
+              </div>
+            </div>
+          </div>
+
+          <a href="https://primegroup.lk" target="_blank" class="explore-btn">
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Blue Ocean Group</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">17+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">36+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">6</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">500-1000</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo 04, Kohuwala, Jaffa, Ja-Ela</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka,Australia,UK</div>
+            </div>
+          </div>
+
+          <a
+            href="https://blueoceangroup.lk/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">John Keells Properties</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">23+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">9+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">50-200</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://www.johnkeellsproperties.com/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Home Lands Skyline</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">20+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">27+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">7</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">500-1000</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">
+                Colombo, Negambo, Kurunegala, Galle, Gampaha
+              </div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">
+                Sri Lanka,United Arab Emirates (Dudai), Australia (Melbourne)
+              </div>
+            </div>
+          </div>
+
+          <a
+            href="https://www.homelandsskyline.lk/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Rush Lanka Group</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">32+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">26+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">50-200</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://www.rushlankagroup.com/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Odiliya Homes</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">13+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">15+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">10</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">50-200</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">
+                Wattala, Panadura, Artigala, Pannipitiya, Kelaniya, Negambo
+              </div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka,Australia, Canada, USA, UK</div>
+            </div>
+          </div>
+
+          <a
+            href="https://odiliyahomes.lk/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Fairway Properties</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">20+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">6+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">500-1000</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Rajagiriya</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://www.fairwayproperties.lk/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Coral Property Developers</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">23+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">12+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">50-200</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo 04</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://coral.lk/v1/home"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">JAT Living</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">8+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">3+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">3</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">below 10</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Thalawathugoda, Milagiriya, Nawala</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://www.jatliving.com/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Crystal Property Group</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">7+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">3+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value"></div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://lk.linkedin.com/company/crystalpropertygroup"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Span Tower</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">23+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">23+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">4</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">50-200</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">
+                Wellawatte, Bambalapitiya, Moratuwa & Dehiwala, Negambo
+              </div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a href="https://spantower.com/" target="_blank" class="explore-btn">
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Global Housing & Real Estate</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">23+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">15+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">200-500</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo 10</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://www.globalhousing.lk/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Trillium Group</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">30+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">8+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">1</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">50-200</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Colombo 05</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a href="https://trillium.lk/" target="_blank" class="explore-btn">
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+        <div class="card">
+          <div class="card-top">
+            <div class="logo">
+              <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+              <div class="company-name">Nemra Properties</div>
+              <div class="company-type">Real Estate Developer</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-title">Experience</div>
+              <div class="info-value">15+ Years</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Apartment Projects</div>
+              <div class="info-value">7+</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Company Offices</div>
+              <div class="info-value">3</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Employees</div>
+              <div class="info-value">15-50</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Locations</div>
+              <div class="info-value">Dehiwala, Rathmalana, Wattala</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-title">Countries</div>
+              <div class="info-value">Sri Lanka</div>
+            </div>
+          </div>
+
+          <a
+            href="https://nemraproperties.com/"
+            target="_blank"
+            class="explore-btn"
+          >
+            Explore More
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">
+                Years in Apartment Business vs Number of Projects Delivered
+              </div>
+
+              <div class="chart-subtitle">
+                Demonstrates how long-term market presence aligns with
+                consistent project delivery, reflecting trust, capability, and
+                competitive strength.
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <canvas id="projectExperienceChart"></canvas>
+          </div>
+
+          <div class="insight-panel">
+            <div class="insight-heading">
+              <i class="fa-solid fa-lightbulb"></i>
+              Strategic Insights
+            </div>
+
+            <div class="insight-grid">
+              <div class="insight-card">
+                <div class="insight-label">Highest Project Volume</div>
+
+                <div class="insight-value">Prime Group</div>
+
+                <div class="insight-description">
+                  Maintains the highest number of apartment developments among
+                  competitors.
+                </div>
+              </div>
+
+              <div class="insight-card">
+                <div class="insight-label">Fastest Growth Efficiency</div>
+
+                <div class="insight-value">Blue Ocean Group</div>
+
+                <div class="insight-description">
+                  Delivered a strong number of projects within comparatively
+                  fewer years.
+                </div>
+              </div>
+
+              <div class="insight-card">
+                <div class="insight-label">Strategic Recommendation</div>
+
+                <div class="insight-value">Expansion Potential</div>
+
+                <div class="insight-description">
+                  Strategically scale future developments through innovation,
+                  efficient project management, and customer-centric planning to
+                  reinforce the company’s position within the competitive
+                  apartment sector.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">
+                Operational Efficiency Matrix: Projects, Workforce & Industry
+                Experience
+              </div>
+
+              <div class="chart-subtitle">
+                Demonstrates how effectively companies convert organizational
+                experience and employee capacity into completed project
+                developments.
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <canvas id="workforceChart"></canvas>
+          </div>
+
+          <div class="insight-panel">
+            <div class="insight-heading">
+              <i class="fa-solid fa-chart-line"></i>
+              Operational Insights
+            </div>
+
+            <div class="insight-grid">
+              <div class="insight-card">
+                <div class="insight-label">Lean Workforce Performance</div>
+
+                <div class="insight-value">Odiliya Homes</div>
+
+                <div class="insight-description">
+                  Achieved competitive project numbers using a comparatively
+                  smaller workforce.
+                </div>
+              </div>
+
+              <div class="insight-card">
+                <div class="insight-label">Largest Workforce</div>
+
+                <div class="insight-value">Prime Group</div>
+
+                <div class="insight-description">
+                  Demonstrates the highest operational capacity and resource
+                  availability.
+                </div>
+              </div>
+
+              <div class="insight-card">
+                <div class="insight-label">Strategic Recommendation</div>
+
+                <div class="insight-value">Workforce Optimization</div>
+
+                <div class="insight-description">
+                  Improve productivity per employee while increasing automation
+                  and project execution speed.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        /* CHART SECTION */
+
+        .charts-section {
+          position: relative;
+          z-index: 5;
+
+          padding: 30px 40px;
+
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 35px;
+        }
+
+        /* CHART PANEL */
+
+        .chart-panel {
+          padding: 28px;
+
+          border-radius: 30px;
+
+          background: rgba(255, 255, 255, 0.06);
+
+          border: 1px solid rgba(255, 255, 255, 0.12);
+
+          backdrop-filter: blur(18px);
+
+          box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+
+          overflow: hidden;
+
+          position: relative;
+        }
+
+        /* GLOW EFFECT */
+
+        .chart-panel::before {
+          content: "";
+
+          position: absolute;
+
+          width: 350px;
+          height: 350px;
+
+          border-radius: 50%;
+
+          background: rgba(44, 110, 110, 0.18);
+
+          top: -150px;
+          right: -120px;
+
+          filter: blur(80px);
+        }
+
+        /* TITLES */
+
+        .chart-title {
+          font-size: 26px;
+          font-weight: 700;
+        }
+
+        .chart-subtitle {
+          margin-top: 10px;
+          color: #d7f0f0;
+          line-height: 1.8;
+          max-width: 900px;
+        }
+
+        /* CHART AREA */
+
+        .chart-box {
+          margin-top: 30px;
+          height: 520px;
+          position: relative;
+        }
+
+        /* INSIGHT PANEL */
+
+        .insight-panel {
+          margin-top: 35px;
+        }
+
+        .insight-heading {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          font-size: 20px;
+          font-weight: 700;
+
+          color: #8fd6d6;
+        }
+
+        .insight-grid {
+          margin-top: 20px;
+
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+
+          gap: 20px;
+        }
+
+        /* INSIGHT CARD */
+
+        .insight-card {
+          padding: 20px;
+
+          border-radius: 22px;
+
+          background: rgba(26, 80, 80, 0.45);
+
+          border: 1px solid rgba(255, 255, 255, 0.08);
+
+          transition: 0.4s ease;
+        }
+
+        .insight-card:hover {
+          transform: translateY(-6px);
+
+          background: rgba(44, 110, 110, 0.16);
+
+          box-shadow: 0 0 20px rgba(44, 110, 110, 0.35);
+        }
+
+        .insight-label {
+          color: #8fd6d6;
+          font-size: 12px;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
+
+        .insight-value {
+          margin-top: 10px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+
+        .insight-description {
+          margin-top: 10px;
+          color: #d8eeee;
+          line-height: 1.8;
+          font-size: 13px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1200px) {
+          .insight-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      </style>
+
+      <script>
+        /* ===================== DATA ===================== */
+
+        const companies = [
+          {
+            name: "Prime Group",
+            years: 15,
+            projects: 52,
+            employees: 750,
+            color: "rgba(0,255,255,0.18)",
+            border: "#00ffff",
+          },
+
+          {
+            name: "John Keells Properties",
+            years: 23,
+            projects: 9,
+            employees: 100,
+            color: "rgba(255,0,255,0.18)",
+            border: "#ff00ff",
+          },
+
+          {
+            name: "Blue Ocean Group",
+            years: 17,
+            projects: 36,
+            employees: 750,
+            color: "rgba(255,255,0,0.18)",
+            border: "#ffff00",
+          },
+
+          {
+            name: "Home Lands Skyline",
+            years: 11,
+            projects: 25,
+            employees: 450,
+            color: "rgba(0,255,120,0.18)",
+            border: "#00ff78",
+          },
+
+          {
+            name: "Rush Lanka Group",
+            years: 32,
+            projects: 26,
+            employees: 100,
+            color: "rgba(0,140,255,0.18)",
+            border: "#008cff",
+          },
+
+          {
+            name: "Odiliya Homes",
+            years: 13,
+            projects: 15,
+            employees: 100,
+            color: "rgba(255,120,0,0.18)",
+            border: "#ff7800",
+          },
+
+          {
+            name: "Fairway Properties",
+            years: 20,
+            projects: 6,
+            employees: 750,
+            color: "rgba(180,0,255,0.18)",
+            border: "#b400ff",
+          },
+
+          {
+            name: "Coral Property Developers",
+            years: 23,
+            projects: 12,
+            employees: 100,
+            color: "rgba(255,0,90,0.18)",
+            border: "#ff005a",
+          },
+
+          {
+            name: "JAT Living",
+            years: 8,
+            projects: 3,
+            employees: 10,
+            color: "rgba(0,255,180,0.18)",
+            border: "#00ffb4",
+          },
+
+          {
+            name: "Crystal Property Group",
+            years: 7,
+            projects: 3,
+            employees: 10,
+            color: "rgba(255,255,255,0.18)",
+            border: "#ffffff",
+          },
+
+          {
+            name: "Span Tower",
+            years: 23,
+            projects: 23,
+            employees: 100,
+            color: "rgba(255,50,50,0.18)",
+            border: "#ff3232",
+          },
+
+          {
+            name: "Global Housing & Real Estate",
+            years: 23,
+            projects: 15,
+            employees: 350,
+            color: "rgba(50,255,50,0.18)",
+            border: "#32ff32",
+          },
+
+          {
+            name: "Trillium Group",
+            years: 30,
+            projects: 8,
+            employees: 100,
+            color: "rgba(50,50,255,0.18)",
+            border: "#3232ff",
+          },
+
+          {
+            name: "Nemra Properties",
+            years: 15,
+            projects: 7,
+            employees: 35,
+            color: "rgba(255,180,0,0.18)",
+            border: "#ffb400",
+          },
+        ];
+
+        /* ===================== GLOWING BUBBLE PLUGIN ===================== */
+
+        const glowingBubblePlugin = {
+          id: "glowingBubblePlugin",
+
+          beforeDatasetsDraw(chart) {
+            const { ctx } = chart;
+
+            chart.data.datasets.forEach((dataset, index) => {
+              const meta = chart.getDatasetMeta(index);
+
+              meta.data.forEach((element) => {
+                ctx.save();
+
+                ctx.shadowColor = dataset.borderColor;
+                ctx.shadowBlur = 25;
+
+                ctx.beginPath();
+
+                ctx.arc(
+                  element.x,
+                  element.y,
+                  element.options.radius,
+                  0,
+                  Math.PI * 2,
+                );
+
+                ctx.fillStyle = dataset.backgroundColor;
+                ctx.fill();
+
+                ctx.restore();
+              });
+            });
+          },
+        };
+
+        Chart.register(glowingBubblePlugin);
+
+        /* ===================== CHART 01 ===================== */
+
+        new Chart(document.getElementById("projectExperienceChart"), {
+          type: "bubble",
+
+          data: {
+            datasets: companies.map((company) => ({
+              label: company.name,
+
+              data: [
+                {
+                  x: company.years,
+                  y: company.projects,
+                  r: company.projects / 1.8,
+                },
+              ],
+
+              backgroundColor: company.color,
+
+              borderColor: company.border,
+
+              borderWidth: 3,
+
+              hoverBorderWidth: 2,
+            })),
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
+                display: false,
+              },
+
+              tooltip: {
+                backgroundColor: "#0e3333",
+
+                borderColor: "#2c6e6e",
+
+                borderWidth: 1,
+
+                titleColor: "#ffffff",
+
+                bodyColor: "#dffefe",
+
+                callbacks: {
+                  label: function (context) {
+                    const company = companies[context.datasetIndex];
+
+                    return [
+                      "Company : " + company.name,
+                      "Years in Business : " + company.years,
+                      "No of Projects : " + company.projects,
+                    ];
+                  },
+                },
+              },
+            },
+
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "No of Years in Business",
+                  color: "white",
+                  font: {
+                    size: 16,
+                    weight: "bold",
+                  },
+                },
+
+                ticks: {
+                  color: "white",
+                },
+
+                grid: {
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+
+              y: {
+                title: {
+                  display: true,
+                  text: "No of Apartment Projects",
+                  color: "white",
+                  font: {
+                    size: 16,
+                    weight: "bold",
+                  },
+                },
+
+                ticks: {
+                  color: "white",
+                },
+
+                grid: {
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+            },
+          },
+
+          plugins: [
+            {
+              id: "centerDots",
+
+              afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+
+                chart.data.datasets.forEach((dataset, index) => {
+                  const meta = chart.getDatasetMeta(index);
+
+                  meta.data.forEach((element) => {
+                    ctx.beginPath();
+
+                    ctx.arc(element.x, element.y, 3, 0, Math.PI * 2);
+
+                    ctx.fillStyle = "#071818";
+
+                    ctx.fill();
+                  });
+                });
+              },
+            },
+          ],
+        });
+
+        /* ===================== CHART 02 ===================== */
+
+        new Chart(document.getElementById("workforceChart"), {
+          type: "bubble",
+
+          data: {
+            datasets: companies.map((company) => ({
+              label: company.name,
+
+              data: [
+                {
+                  x: company.years,
+                  y: company.employees,
+                  r: company.projects / 2,
+                },
+              ],
+
+              backgroundColor: company.color,
+
+              borderColor: company.border,
+
+              borderWidth: 3,
+            })),
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
+                display: false,
+              },
+
+              tooltip: {
+                backgroundColor: "#0e3333",
+
+                borderColor: "#2c6e6e",
+
+                borderWidth: 1,
+
+                titleColor: "#ffffff",
+
+                bodyColor: "#dffefe",
+
+                callbacks: {
+                  label: function (context) {
+                    const company = companies[context.datasetIndex];
+
+                    return [
+                      "Company : " + company.name,
+                      "Years in Business : " + company.years,
+                      "No of Projects : " + company.projects,
+                      "No of Employees : " + company.employees,
+                    ];
+                  },
+                },
+              },
+            },
+
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "No of Years in Business",
+                  color: "white",
+                  font: {
+                    size: 16,
+                    weight: "bold",
+                  },
+                },
+
+                ticks: {
+                  color: "white",
+                },
+
+                grid: {
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+
+              y: {
+                title: {
+                  display: true,
+                  text: "No of Employees",
+                  color: "white",
+                  font: {
+                    size: 16,
+                    weight: "bold",
+                  },
+                },
+
+                ticks: {
+                  color: "white",
+                },
+
+                grid: {
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+            },
+          },
+
+          plugins: [
+            {
+              id: "centerDots2",
+
+              afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+
+                chart.data.datasets.forEach((dataset, index) => {
+                  const meta = chart.getDatasetMeta(index);
+
+                  meta.data.forEach((element) => {
+                    ctx.beginPath();
+
+                    ctx.arc(element.x, element.y, 5, 0, Math.PI * 2);
+
+                    ctx.fillStyle = "#071818";
+
+                    ctx.fill();
+                  });
+                });
+              },
+            },
+          ],
+        });
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prime Group - Unit Configuration Pricing Matrix</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- PapaParse & Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      /* ---------------- CORE & THEME COLORS ---------------- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background:
+          linear-gradient(rgba(14, 51, 51, 0.88), rgba(14, 51, 51, 0.96)),
+          url("image11.jpg") no-repeat center center fixed;
+        background-size: cover;
+        color: #ffffff;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0e3333;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2c6e6e;
+        border-radius: 4px;
+      }
+
+      /* ---------------- RHYTHMIC FLOATING PARTICLES ---------------- */
+      #particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .glow-particle {
+        position: absolute;
+        background: #8fe7e7;
+        border-radius: 50%;
+        box-shadow:
+          0 0 15px #8fe7e7,
+          0 0 30px #2c6e6e;
+        animation: rhythmicFloat infinite ease-in-out alternate;
+      }
+
+      @keyframes rhythmicFloat {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 0.6;
+          box-shadow:
+            0 0 20px #8fe7e7,
+            0 0 40px #8fe7e7;
+        }
+        100% {
+          transform: translateY(-30px) scale(1.1);
+          opacity: 0.05;
+        }
+      }
+
+      /* ---------------- NAVIGATION ---------------- */
+      .nav-container {
+        position: relative;
+        z-index: 100;
+        padding: 30px 4% 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .btn-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 35px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        background-color: #2c6e6e;
+        border: 2px solid #2d6b6b;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn-nav:hover {
+        background-color: #0e3333;
+        border-color: #8fe7e7;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(143, 231, 231, 0.3);
+      }
+
+      /* ---------------- MAIN CONTENT ---------------- */
+      .main-content {
+        position: relative;
+        z-index: 10;
+        padding: 10px 4% 50px;
+        max-width: 1800px;
+        margin: 0 auto;
+      }
+
+      .header-box {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 1s ease-out;
+      }
+      .header-box h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+      .header-box h2 {
+        font-size: 1.1rem;
+        color: #8fe7e7;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* Loading Status */
+      #data-status {
+        text-align: center;
+        color: #8fe7e7;
+        font-size: 1.2rem;
+        font-weight: 500;
+        animation: pulse 1.5s infinite;
+        margin-bottom: 30px;
+      }
+
+      /* ---------------- CHARTS GRID (For 7 Charts) ---------------- */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px;
+        display: none; /* Hidden until data loads */
+        margin-bottom: 50px;
+      }
+
+      /* Make the 7th chart span full width */
+      .charts-grid > div:nth-child(7) {
+        grid-column: 1 / -1;
+      }
+
+      .chart-glass-panel {
+        background: rgba(26, 80, 80, 0.35);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(143, 231, 231, 0.2);
+        border-radius: 24px;
+        padding: 25px 30px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(14, 51, 51, 0.5);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        position: relative;
+      }
+
+      /* Stagger chart loading animations */
+      .chart-glass-panel:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .chart-glass-panel:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .chart-glass-panel:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .chart-glass-panel:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .chart-glass-panel:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .chart-glass-panel:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+      .chart-glass-panel:nth-child(7) {
+        animation-delay: 0.7s;
+      }
+
+      .chart-title {
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(143, 231, 231, 0.2);
+        padding-bottom: 10px;
+      }
+
+      .chart-wrapper {
+        height: 380px;
+        width: 100%;
+      }
+
+      /* ---------------- MANAGEMENT INSIGHTS PANELS ---------------- */
+      .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        display: none; /* Hidden until data loads */
+      }
+
+      .insight-card {
+        background: rgba(14, 51, 51, 0.5);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(44, 110, 110, 0.5);
+        border-radius: 20px;
+        padding: 30px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .insight-card:nth-child(1) {
+        animation-delay: 0.8s;
+      }
+      .insight-card:nth-child(2) {
+        animation-delay: 0.9s;
+      }
+      .insight-card:nth-child(3) {
+        animation-delay: 1s;
+      }
+
+      .insight-card:hover {
+        transform: translateY(-8px);
+        background: rgba(26, 80, 80, 0.7);
+        border-color: #8fe7e7;
+        box-shadow:
+          0 15px 40px rgba(44, 110, 110, 0.8),
+          inset 0 0 15px rgba(143, 231, 231, 0.2);
+      }
+
+      .insight-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c6e6e, #8fe7e7, #ffffff);
+        transition: width 0.5s ease;
+      }
+      .insight-card:hover::after {
+        width: 100%;
+      }
+
+      .insight-icon {
+        font-size: 2.2rem;
+        color: #8fe7e7;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 0 8px rgba(143, 231, 231, 0.6));
+      }
+
+      .insight-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .insight-text {
+        font-size: 0.9rem;
+        color: #d4eeee;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      .highlight {
+        color: #ffffff;
+        font-weight: 600;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+        .charts-grid > div:nth-child(7) {
+          grid-column: auto;
+        }
+        .insights-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Glowing Particles -->
+    <div id="particle-container"></div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+      <a href="page9.html" class="btn-nav"
+        ><i class="fa-solid fa-arrow-left"></i> Back</a
+      >
+      <a href="page11.html" class="btn-nav"
+        >Next <i class="fa-solid fa-arrow-right"></i
+      ></a>
+    </div>
+
+    <div class="main-content">
+      <div class="header-box">
+        <h1>Unit Configuration Pricing Matrix</h1>
+        <h2>Furnished vs. Unfurnished Price per Sq.Ft Analysis by Location</h2>
+      </div>
+
+      <div id="data-status">Fetching Live Configuration Data...</div>
+
+      <!-- 7-Chart Grid Container -->
+      <div class="charts-grid" id="charts-grid-container">
+        <div class="chart-glass-panel">
+          <div class="chart-title">2 BR, 1 WR Configuration</div>
+          <div class="chart-wrapper"><canvas id="chart_2BR_1WR"></canvas></div>
+        </div>
+
+        <div class="chart-glass-panel">
+          <div class="chart-title">2 BR, 2 WR Configuration</div>
+          <div class="chart-wrapper"><canvas id="chart_2BR_2WR"></canvas></div>
+        </div>
+
+        <div class="chart-glass-panel">
+          <div class="chart-title">3 BR, 2 WR Configuration</div>
+          <div class="chart-wrapper"><canvas id="chart_3BR_2WR"></canvas></div>
+        </div>
+
+        <div class="chart-glass-panel">
+          <div class="chart-title">3 BR, 3 WR Configuration</div>
+          <div class="chart-wrapper"><canvas id="chart_3BR_3WR"></canvas></div>
+        </div>
+
+        <div class="chart-glass-panel">
+          <div class="chart-title">4 BR, 3 WR Configuration</div>
+          <div class="chart-wrapper"><canvas id="chart_4BR_3WR"></canvas></div>
+        </div>
+
+        <div class="chart-glass-panel">
+          <div class="chart-title">4 BR, 4 WR Configuration</div>
+          <div class="chart-wrapper"><canvas id="chart_4BR_4WR"></canvas></div>
+        </div>
+
+        <div class="chart-glass-panel">
+          <div class="chart-title">4+ Bedroom Configuration (Ultra-Luxury)</div>
+          <div class="chart-wrapper"><canvas id="chart_4PLUS"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Executive Insights -->
+      <div class="insights-grid" id="insights-container">
+        <div class="insight-card">
+          <i class="fa-solid fa-couch insight-icon"></i>
+          <div class="insight-title">The Furnishing Premium</div>
+          <div class="insight-text">
+            Observe the consistent gap between
+            <span class="highlight" style="color: #8fe7e7"
+              >Teal (Furnished)</span
+            >
+            and
+            <span class="highlight" style="color: #00ff78"
+              >Green (Unfurnished)</span
+            >
+            clusters. Fully furnished units consistently command a significant
+            per-square-foot premium, highlighting an immediate opportunity for
+            higher profit margins on turnkey properties.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-bed insight-icon"></i>
+          <div class="insight-title">Configuration Price Thresholds</div>
+          <div class="insight-text">
+            As bedroom counts scale into the 3BR and 4BR+ categories, the price
+            per sq.ft. often accelerates exponentially within urban cores
+            compared to suburban belts. This demonstrates a
+            <span class="highlight">high willingness-to-pay</span> for
+            ultra-luxury, spacious family residences in the city.
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <i class="fa-solid fa-lightbulb insight-icon"></i>
+          <div class="insight-title">Untapped Micro-Markets</div>
+          <div class="insight-text">
+            Gaps or missing bars in larger configurations (e.g., 4 BR, 4 WR)
+            across certain locations indicate potential
+            <span class="highlight">untapped micro-markets</span>. Prime Group
+            can introduce tailored luxury supply into these specific geographic
+            zones with minimal direct pricing competition.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------------------------------------------------------------
+           1. PARTICLES GENERATOR
+        ------------------------------------------------------------------------- */
+      const particleContainer = document.getElementById("particle-container");
+      for (let i = 0; i < 50; i++) {
+        let particle = document.createElement("div");
+        particle.className = "glow-particle";
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.top = Math.random() * 100 + "vh";
+        let size = Math.random() * 5 + 3;
+        particle.style.width = size + "px";
+        particle.style.height = size + "px";
+        particle.style.animationDuration = Math.random() * 3 + 3 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particleContainer.appendChild(particle);
+      }
+
+      /* -------------------------------------------------------------------------
+           2. CHART CONFIGURATION MAPPING
+           Mapping the canvas IDs to the specific columns from your Google Sheet
+        ------------------------------------------------------------------------- */
+      const chartConfigs = [
+        { id: "chart_2BR_1WR", name: "2 BR, 1 WR", columnIndex: 3 }, // Col D
+        { id: "chart_2BR_2WR", name: "2 BR, 2 WR", columnIndex: 4 }, // Col E
+        { id: "chart_3BR_2WR", name: "3 BR, 2 WR", columnIndex: 5 }, // Col F
+        { id: "chart_3BR_3WR", name: "3 BR, 3 WR", columnIndex: 6 }, // Col G
+        { id: "chart_4BR_3WR", name: "4 BR, 3 WR", columnIndex: 7 }, // Col H
+        { id: "chart_4BR_4WR", name: "4 BR, 4 WR", columnIndex: 8 }, // Col I
+        { id: "chart_4PLUS", name: "4+ Bedroom", columnIndex: 9 }, // Col J
+      ];
+
+      /* -------------------------------------------------------------------------
+           3. LIVE FETCH LOGIC (Using Web Published CSV Link)
+        ------------------------------------------------------------------------- */
+      const publishedCsvUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnlBGyFzJGSsKTOHebBcrgx4-RuTZ8lVemvnwKZURZUDnO4F9EEbj2f8RsZcjDiXZzESqb14WXqesr/pub?output=csv";
+
+      Papa.parse(publishedCsvUrl, {
+        download: true,
+        header: false, // We use indices to parse exact columns
+        skipEmptyLines: true,
+        complete: function (results) {
+          document.getElementById("data-status").style.display = "none";
+          document.getElementById("charts-grid-container").style.display =
+            "grid";
+          document.getElementById("insights-container").style.display = "grid";
+          processAndRenderAllCharts(results.data);
+        },
+        error: function (err) {
+          document.getElementById("data-status").innerText =
+            "Error connecting to live data. Please check CSV URL.";
+          document.getElementById("data-status").style.color = "#ff6b6b";
+        },
+      });
+
+      /* -------------------------------------------------------------------------
+           4. DATA PROCESSING & 7-CHART RENDERER
+        ------------------------------------------------------------------------- */
+      function processAndRenderAllCharts(rawData) {
+        // 4a. Initialize Data Structure
+        // { "Colombo 7": { "Furnished": { "chart_2BR_1WR": {sum:0, count:0}, ... }, "Unfurnished": {...} } }
+        const locationStats = {};
+        const uniqueLocations = new Set();
+        const uniqueFurnishStates = new Set();
+
+        // 4b. Loop through rows and aggregate
+        for (let i = 1; i < rawData.length; i++) {
+          let row = rawData[i];
+          let location = row[1] ? row[1].trim() : null; // Column B
+          let furnishState = row[2] ? row[2].trim() : "Unknown"; // Column C
+
+          // Standardize "Furnished" / "Unfurnished" text in case of typos
+          if (furnishState.toLowerCase().includes("unfurnished")) {
+            furnishState = "Unfurnished";
+          } else if (furnishState.toLowerCase().includes("furnished")) {
+            furnishState = "Furnished";
+          }
+
+          if (location) {
+            uniqueLocations.add(location);
+            uniqueFurnishStates.add(furnishState);
+
+            // Setup nested objects if they don't exist
+            if (!locationStats[location]) locationStats[location] = {};
+            if (!locationStats[location][furnishState]) {
+              locationStats[location][furnishState] = {};
+              // Initialize counters for all 7 configurations
+              chartConfigs.forEach((config) => {
+                locationStats[location][furnishState][config.id] = {
+                  sum: 0,
+                  count: 0,
+                };
+              });
+            }
+
+            // Accumulate prices for all 7 columns
+            chartConfigs.forEach((config) => {
+              let rawPriceString = row[config.columnIndex]
+                ? row[config.columnIndex]
+                    .toString()
+                    .replace(/,/g, "")
+                    .replace(/Rs/gi, "")
+                    .trim()
+                : "0";
+              let price = parseFloat(rawPriceString) || 0;
+
+              if (price > 0) {
+                locationStats[location][furnishState][config.id].sum += price;
+                locationStats[location][furnishState][config.id].count += 1;
+              }
+            });
+          }
+        }
+
+        const locationsArray = Array.from(uniqueLocations).sort();
+        const statesArray = Array.from(uniqueFurnishStates).sort(); // E.g., ["Furnished", "Unfurnished"]
+
+        /* ---------------------------------------------------------------------
+               CUSTOM PLUGIN: NEON GLOWING BARS
+            --------------------------------------------------------------------- */
+        const glowingBarPlugin = {
+          id: "glowingBar",
+          beforeDatasetDraw(chart, args, options) {
+            const { ctx } = chart;
+            const dataset = chart.data.datasets[args.index];
+            if (!dataset) return;
+            ctx.save();
+            ctx.shadowColor = dataset.borderColor || dataset.backgroundColor;
+            ctx.shadowBlur = 10;
+          },
+          afterDatasetDraw(chart, args, options) {
+            chart.ctx.restore();
+          },
+        };
+        Chart.register(glowingBarPlugin);
+        Chart.defaults.color = "#e0e0e0";
+        Chart.defaults.font.family = "Poppins";
+
+        // 4c. Generate a chart for each configuration
+        chartConfigs.forEach((config) => {
+          // Prepare Datasets for this specific chart
+          const datasets = statesArray.map((state) => {
+            // Extract average price for this config across all locations
+            const dataPoints = locationsArray.map((loc) => {
+              let statNode = locationStats[loc]?.[state]?.[config.id];
+              if (statNode && statNode.count > 0) {
+                return statNode.sum / statNode.count; // Average Price
+              }
+              return null; // No data for this combo
+            });
+
+            // Assign colors based on Furnished state
+            let bgColor, borderColor;
+            if (state === "Furnished") {
+              bgColor = "rgba(143, 231, 231, 0.85)"; // Teal
+              borderColor = "#8fe7e7";
+            } else {
+              bgColor = "rgba(0, 255, 120, 0.85)"; // Emerald Green
+              borderColor = "#00ff78";
+            }
+
+            return {
+              label: state,
+              data: dataPoints,
+              backgroundColor: bgColor,
+              borderColor: borderColor,
+              borderWidth: 1,
+              borderRadius: 4,
+              hoverBorderWidth: 2,
+              hoverBorderColor: "#ffffff",
+            };
+          });
+
+          // Render Chart
+          const ctx = document.getElementById(config.id).getContext("2d");
+          new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: locationsArray,
+              datasets: datasets,
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false }, // Clustered hover
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    color: "#ffffff",
+                    font: { size: 12, family: "Poppins" },
+                    padding: 15,
+                    usePointStyle: true,
+                  },
+                },
+                tooltip: {
+                  backgroundColor: "rgba(14, 51, 51, 0.95)",
+                  titleColor: "#8fe7e7",
+                  bodyColor: "#ffffff",
+                  borderColor: "#2c6e6e",
+                  borderWidth: 1,
+                  padding: 12,
+                  titleFont: { size: 14, weight: "bold", family: "Poppins" },
+                  bodyFont: { size: 13, family: "Poppins" },
+                  callbacks: {
+                    title: function (context) {
+                      return "Locality: " + context[0].label;
+                    },
+                    label: function (context) {
+                      let val = context.raw;
+                      if (val !== null) {
+                        return (
+                          context.dataset.label +
+                          " : LKR " +
+                          val.toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          }) +
+                          " / sq.ft"
+                        );
+                      }
+                      return context.dataset.label + " : No Data";
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    color: "#ffffff",
+                    font: { size: 11 },
+                    maxRotation: 45,
+                    minRotation: 45,
+                  },
+                  grid: { display: false },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Avg Sale Price (LKR)",
+                    color: "#8fe7e7",
+                    font: { size: 12, weight: "bold" },
+                  },
+                  ticks: {
+                    color: "#ffffff",
+                    font: { size: 11 },
+                    callback: function (value) {
+                      return (
+                        "LKR " + (value >= 1000 ? value / 1000 + "k" : value)
+                      );
+                    },
+                  },
+                  grid: { color: "rgba(143, 231, 231, 0.08)" },
+                },
+              },
+            },
+          });
+        }); // End of chart config loop
+      }
+    </script>
+  </body>
+</html>
